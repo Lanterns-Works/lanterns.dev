@@ -1,0 +1,186 @@
+/* lanterns.dev — the dock */
+
+:root {
+  --black: #160e0e;
+  --white: #e7e5de;
+  --flame-x: 73%;   /* lantern flame position in plate space */
+  --flame-y: 63%;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+@font-face {
+  font-family: 'Nimbus Mono';
+  src: url('/assets/fonts/NimbusMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Nimbus Mono', ui-monospace, 'Courier New', monospace;
+}
+
+.scene {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Cover box for a 3840×2143 plate. Horizontal anchor: keep image-x 68%
+   (just left of the lantern) at viewport center, clamped so the plate
+   always covers. 179.19vh = 100vh·(3840/2143); 55.81vw = 100vw·(2143/3840). */
+.plate {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: max(100vw, 179.19vh);
+  height: max(100vh, 55.81vw);
+  transform: translate(clamp(100vw - 100%, 50vw - 68%, 0px), -50%);
+}
+
+.plate img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- water shimmer: drifting light streaks over the reflection band --- */
+
+.shimmer {
+  position: absolute;
+  left: 0;
+  top: 42%;      /* the water band in plate space */
+  width: 74%;
+  height: 26%;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  -webkit-mask-image: radial-gradient(ellipse 65% 55% at 52% 50%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse 65% 55% at 52% 50%, #000 30%, transparent 78%);
+  animation: shimmer-breathe 9s ease-in-out infinite alternate;
+}
+
+.shimmer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -60px;    /* headroom so the drift loop stays covered */
+  bottom: -60px;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 190, 110, 0.06) 0px,
+    rgba(255, 190, 110, 0.06) 1px,
+    transparent 2px,
+    transparent 6px,
+    rgba(255, 160, 70, 0.04) 7px,
+    transparent 8px,
+    transparent 12px
+  );
+  animation: shimmer-drift 7s linear infinite;
+}
+
+/* translate by exactly one 12px repeat period → seamless loop */
+@keyframes shimmer-drift {
+  to { transform: translateY(12px); }
+}
+
+@keyframes shimmer-breathe {
+  from { opacity: 0.35; }
+  to   { opacity: 0.55; }
+}
+
+.glow-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+header {
+  position: fixed;
+  top: clamp(16px, 4vmin, 40px);
+  left: clamp(16px, 4vmin, 40px);
+}
+
+.wordmark {
+  display: block;
+  width: clamp(140px, 20vw, 200px);
+  height: auto;
+}
+
+footer {
+  position: fixed;
+  right: clamp(16px, 4vmin, 40px);
+  bottom: clamp(12px, 3vmin, 28px);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+/* --- the lantern glow: subtle breathing steady-state, JS-scheduled gusts --- */
+
+.glow {
+  position: absolute;
+  left: var(--flame-x);
+  top: var(--flame-y);
+  width: 34%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle,
+    rgba(255, 190, 110, 0.20) 0%,
+    rgba(255, 160, 70, 0.08) 35%,
+    transparent 70%);
+  mix-blend-mode: screen;
+  animation: breathe-a 3.4s ease-in-out infinite alternate;
+}
+
+.glow.b {
+  width: 20%;
+  background: radial-gradient(circle,
+    rgba(255, 205, 135, 0.22) 0%,
+    transparent 60%);
+  animation: breathe-b 5.2s ease-in-out infinite alternate;
+}
+
+/* irregular notches so the flame dances instead of pulsing */
+@keyframes breathe-a {
+  0%   { opacity: 0.74; }
+  35%  { opacity: 0.92; }
+  47%  { opacity: 0.86; }
+  70%  { opacity: 0.98; }
+  82%  { opacity: 0.90; }
+  100% { opacity: 1; }
+}
+
+@keyframes breathe-b {
+  from { opacity: 1;    transform: translate(-50%, -50%) scale(0.97); }
+  to   { opacity: 0.80; transform: translate(-50%, -50%) scale(1.04); }
+}
+
+/* wind gust: brief irregular waver, triggered by JS at random intervals;
+   duration is set inline by the scheduler (0.4–1.0s) */
+.glow-field.gust {
+  animation: gust 0.5s linear;
+}
+
+@keyframes gust {
+  0%   { opacity: 1; }
+  15%  { opacity: 0.80; }
+  30%  { opacity: 0.95; }
+  45%  { opacity: 0.76; }
+  60%  { opacity: 0.92; }
+  80%  { opacity: 0.84; }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow, .glow.b { animation: none; opacity: 0.9; }  /* finished mid-state */
+  .glow-field.gust { animation: none; }
+  .shimmer { animation: none; opacity: 0.4; }
+  .shimmer::before { animation: none; }
+}
