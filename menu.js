@@ -22,6 +22,7 @@ const isOpen = () => document.body.classList.contains('popup-open');
 let lastFocus = null;
 let hideTimer = null;
 let lanternTimer = null;
+let lanternDwell = null;
 
 // --- build the nav into BOTH the desktop strip and the in-popup (mobile) list ---
 for (const [name, label] of NAV) {
@@ -171,21 +172,21 @@ function trapFocus(e) {
 // --- the roaming amber lantern (signature): random spot + fade, while open ---
 function startLantern() {
   if (prefersReduced || !lantern) return;
-  const tick = () => {
+  clearTimeout(lanternTimer);
+  // one appearance, 5s after the popup opens: fade in + out at a single fixed spot
+  lanternTimer = setTimeout(() => {
     const pad = 44;
     const w = Math.max(0, popup.clientWidth - pad * 2);
     const h = Math.max(0, popup.clientHeight - pad * 2);
     lantern.style.left = Math.round(pad + Math.random() * w) + 'px';
     lantern.style.top = Math.round(pad + Math.random() * h) + 'px';
     lantern.classList.add('lit');
-    setTimeout(() => lantern.classList.remove('lit'), 4500); // dwell before fading out
-    lanternTimer = setTimeout(tick, 2600 + Math.random() * 4200);
-  };
-  clearTimeout(lanternTimer);
-  lanternTimer = setTimeout(tick, 1400 + Math.random() * 2600);
+    lanternDwell = setTimeout(() => lantern.classList.remove('lit'), 4000); // dwell, then fade out
+  }, 5000);
 }
 function stopLantern() {
   clearTimeout(lanternTimer);
+  clearTimeout(lanternDwell);
   if (lantern) lantern.classList.remove('lit');
 }
 

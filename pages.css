@@ -337,17 +337,17 @@ body.popup-open .popup-panel { opacity: 0.8; transform: none; }
    position + toggles .lit. It leaves WITH the popup — no lingering after close. */
 .popup-lantern {
   position: absolute;
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   z-index: 4;
   pointer-events: none;
   background: radial-gradient(circle,
     rgba(255, 202, 143, 0.98) 0%,
-    rgba(255, 158, 71, 0.85) 20%,
-    rgba(255, 158, 71, 0.32) 44%,
-    rgba(255, 158, 71, 0) 70%);
-  filter: drop-shadow(0 0 7px rgba(255, 150, 70, 0.55));
+    rgba(255, 158, 71, 0.85) 22%,
+    rgba(255, 158, 71, 0.28) 46%,
+    rgba(255, 158, 71, 0) 66%);
+  filter: drop-shadow(0 0 4px rgba(255, 150, 70, 0.4));
   opacity: 0;
   transition: opacity 1.5s ease;
 }
