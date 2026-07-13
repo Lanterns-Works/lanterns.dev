@@ -37,9 +37,10 @@ shows. Nothing was deleted; nobody gets a broken page.
    on the live URL, but the SPEC's formal gate — *60fps sustained through a 3-minute
    sit on a current iPhone, no thermal ramp, no pop at swap* — has **not** been run
    on a physical device. Cap is DPR 2.0; if it ramps, drop the GL buffer to 1.5×.
-2. **Strip the debug harness** for a pristine public build (~2 min). Still live and
-   harmless/zero-cost when off: `?dbg=1` raw / `2` mask / `3` att, `?lamps` (all lit),
-   `?shadertest` (cover-crop self-check → console). Kept in because em is iterating.
+2. **Debug harness stays** (em, 2026-07-13) — *not* stripped. It's disabled by
+   default (nothing renders without the query param) and zero-cost when off, so it
+   just lives in the code until we need it again: `?dbg=1` raw / `2` mask / `3` att,
+   `?lamps` (all lit), `?shadertest` (cover-crop self-check → console).
 3. **Facing-gate sign** (§5 v2 watch-item). The glint facet-facing gate uses
    `-grad.y`; if on close inspection glints sparkle on the "wrong" side of ripples,
    flip to `grad.y` (one character).
@@ -58,9 +59,14 @@ shows. Nothing was deleted; nobody gets a broken page.
   events to the authenticated user.
 - **`main` has branch protection** (changes-via-PR required); direct pushes go
   through as an **admin bypass**. Route through a PR if that's ever preferred.
-- **No dependencies, no build step, ever.** Two-color chrome (`#160e0e`/`#e7e5de`);
-  wordmark is the image, never type; only copy is the footer + 404 line. New mask
-  PNGs are brand assets under `assets/LICENSE.md`.
+- **No build step / no dependencies is the current state, not a rule** (em,
+  2026-07-13). We don't need either for anything planned, so don't add them
+  speculatively — but if a plan genuinely calls for a build or a dependency (e.g. the
+  pages work in `PLAN-pages.md`), that's allowed. Reach for it only when a plan takes
+  us there.
+- **Two-color chrome** (`#160e0e`/`#e7e5de`); wordmark is the image, never type. New
+  mask PNGs are brand assets under `assets/LICENSE.md`. (The "only copy is footer +
+  404" line no longer holds — the pages work adds real content; see `PLAN-pages.md`.)
 
 ## How to work here (house convention)
 
