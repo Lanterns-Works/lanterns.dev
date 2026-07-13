@@ -61,12 +61,12 @@ export const pages = {
     `,
   },
 
-  // Commit 3 turns this into the live EmailJS form; for now, a plain page.
+  // The live EmailJS form is appended by render.js; this is just the intro.
   contact: {
     title: 'Contact',
     html: `
-      <p>Say hello — <a href="mailto:hello@lanterns.dev">hello@lanterns.dev</a>.</p>
-      <p>A proper contact form is on its way to this spot.</p>
+      <p>Tell us what you're making — or just say hello. We read everything, and
+      reply to most of it. Prefer email? <a href="mailto:hello@lanterns.dev">hello@lanterns.dev</a>.</p>
     `,
   },
 };

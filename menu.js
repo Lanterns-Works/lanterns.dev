@@ -3,6 +3,7 @@
 // source of truth for what popup is open (shareable deep links + back button).
 
 import { render, parseHash, NAV } from './render.js';
+import { wireContactForm } from './contact.js';
 
 const $ = (s) => document.querySelector(s);
 const amp = $('#amp');
@@ -38,6 +39,7 @@ const navOpen = () => document.body.classList.contains('nav-open');
 function openPopup(route) {
   const wasHidden = popup.hidden;
   render(route, mount);
+  if (route.name === 'contact') wireContactForm(document.getElementById('contact-form'));
   mount.body.scrollTop = 0;
   nav.querySelectorAll('.nav-item').forEach((a) =>
     a.classList.toggle('is-active', a.dataset.route === route.name),

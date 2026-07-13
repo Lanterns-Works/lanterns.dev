@@ -101,9 +101,37 @@ function renderNews(slug, mount) {
     `</article>`;
 }
 
-// Placeholder until commit 3 (live EmailJS form).
+// Contact: intro copy + the live form. menu.js wires the behavior (contact.js)
+// after this renders — render.js stays a pure view layer.
+const CONTACT_FORM = `
+  <form id="contact-form" class="contact-form" novalidate>
+    <div class="field">
+      <label for="cf-name">Name</label>
+      <input id="cf-name" name="name" type="text" autocomplete="name" required>
+      <p class="field-error" data-for="name" aria-live="polite"></p>
+    </div>
+    <div class="field">
+      <label for="cf-email">Email</label>
+      <input id="cf-email" name="email" type="email" autocomplete="email" required>
+      <p class="field-error" data-for="email" aria-live="polite"></p>
+    </div>
+    <div class="field">
+      <label for="cf-message">Message</label>
+      <textarea id="cf-message" name="message" rows="5" required></textarea>
+      <p class="field-error" data-for="message" aria-live="polite"></p>
+    </div>
+    <div class="hp" aria-hidden="true">
+      <label for="cf-subject">Subject</label>
+      <input id="cf-subject" name="subject" type="text" tabindex="-1" autocomplete="off">
+    </div>
+    <div class="form-foot">
+      <button type="submit" class="form-submit">Send</button>
+      <p class="form-status" role="status" aria-live="polite"></p>
+    </div>
+  </form>`;
+
 function renderContact(mount) {
   const { title, body } = mount;
   title.textContent = pages.contact.title;
-  body.innerHTML = pages.contact.html;
+  body.innerHTML = pages.contact.html + CONTACT_FORM;
 }

@@ -303,6 +303,92 @@ body.nav-open .nav-item {
   margin-bottom: 1em;
 }
 
+/* ---------- contact form ---------- */
+
+.contact-form {
+  margin-top: 0.4em;
+  max-width: 42ch;
+}
+.field { margin-bottom: 1.3em; }
+.field label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.5em;
+}
+.field input,
+.field textarea {
+  width: 100%;
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--edge);
+  border-radius: 0;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 15px;
+  padding: 6px 0;
+  transition: border-color 0.2s ease;
+}
+.field textarea { resize: vertical; line-height: 1.6; }
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.field input[aria-invalid='true'],
+.field textarea[aria-invalid='true'] { border-color: #cc5c3d; }
+
+.field-error {
+  min-height: 1.05em;
+  margin-top: 0.4em;
+  font-size: 12px;
+  color: #cc5c3d;
+}
+
+/* honeypot — off-screen, hidden from the a11y tree via aria-hidden in markup */
+.hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.form-foot {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 1.5em;
+}
+.form-submit {
+  appearance: none;
+  background: none;
+  border: 1px solid var(--fg);
+  border-radius: 0;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+.form-submit:hover,
+.form-submit:focus-visible {
+  background: var(--fg);
+  color: var(--bg);
+}
+.form-submit:disabled { opacity: 0.5; cursor: default; }
+
+.form-status { font-size: 12px; color: var(--muted); }
+.form-status.is-error { color: #cc5c3d; }
+
 /* ---------- mobile: popup covers most of the scene, glow peeks up top ---------- */
 @media (max-width: 760px) {
   .popup {
