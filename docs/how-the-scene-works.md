@@ -6,10 +6,10 @@ Open [lanterns.dev](https://lanterns.dev) and you see a single image: a lantern 
 a wooden dock at dusk, a calm lake, a fading sunset. Look a little longer and it's
 quietly **alive** — the flame flickers, the water ripples and catches light, a few
 small lights wink on across the far shore, and the distant treeline stirs in the
-breeze. It looks like a photograph, but it's breathing.
+breeze. It looks like an oil painting in a realism style, but it's breathing.
 
 This note explains what's actually happening, and — more generally — what the
-technology behind it (a *shader*) is, so you can describe it to anyone.
+technology behind it (a *shader*) is.
 
 ---
 
@@ -105,6 +105,3 @@ room to be beautiful — and room to be *right*, not just impressive.
 - **Render** — to draw a frame. Our scene renders ~60 frames every second.
 - **Fallback** — the simpler version shown when the full effect can't run (old
   device, low-power mode, etc.). Here, a still image of the same scene.
-
-*Want a shareable web version of this for a deck or a link? It can be published as a
-polished page — just ask.*
