@@ -2,23 +2,31 @@
 
 *Design approved by em 2026-07-13. Inspo: **earendil.com**. Content is placeholder-only
 until em provides real copy. This is the build plan; the shader work is separate
-(`SPEC-shaders.md`). Approved and paused here — **pages build starts next session.***
+(`SPEC-shaders.md`). **Built and shipped 2026-07-14 (PR #1 merged); next up is real content.***
 
 ## Next session — start here
 
-**Where we are:** the shader scene is shipped and live; the water v3 (2-octave warp,
-gated to `mask.r`) + stronger tree wind are committed (`8ee20b1`) and em-approved. The
-pages below are **designed and approved but NOT built yet.**
+**Where we are (updated 2026-07-14):** the pages + navigation build is **shipped — PR #1
+merged to `main`, mobile confirmed by em.** Live: lantern-icon menu, hash routing, popups,
+tri-state light/dark, News, section anchors, the live EmailJS contact form (send verified;
+domain allowlist locked), the roaming amber lamp, the mobile full-cover menu, and the
+revised water mask. The pages currently run on **placeholder copy.** (Architecture below
+describes the original design; a few details evolved in build — the toggle is a lantern
+icon, not `&`; the desktop nav strip hides once a popup opens; see the shipped code.)
 
-**Do next:** build the pages, following the **Build order** at the bottom of this doc —
-start at step 1 (popup shell + `&`/menu + hash routing). It's feature work → run it
-through the build loop (brainstorm is done; go to a written implementation plan, then
-build). Build against **placeholder content**; em supplies real copy later.
+**Do next — replace the placeholder content, ONE PAGE AT A TIME (structured intake).**
+em wants a guided flow, not a bulk drop:
+1. Ask em what the **About** page should say; em pastes a raw chunk.
+2. Format that chunk into `content/en.js` — paragraphs + **logical `<h2>` section headings**
+   (2+ headings auto-become the in-popup anchor sidebar — see `render.js` `buildAnchors`).
+   Keep em's voice; add structure, don't invent copy.
+3. Eye-gate, then move to the **next** page. Repeat for Works, Join, and the News posts.
+   Contact only needs its intro line (the form is already built). **Ask one page at a time
+   — don't run ahead.**
 
-**Contact form is now unblocked** (em chose **EmailJS**, 2026-07-13) — it ships as a real
-working form in this build, not a placeholder. EmailJS is client-side, so no server and no
-host migration. Implementation details + build sequence live in `PLAN-pages-build.md`; §6
-below is superseded on the "placeholder only" point.
+**Content model (how to format):** pages = `{ title, html }` keyed by route in
+`content/en.js`; posts = `{ slug, title, date, html }`, newest-first. Bodies are first-party
+HTML strings (`innerHTML` — safe because first-party only).
 
 **Run it:** no build step. `python3 -m http.server --directory <repo>` then open
 `localhost:8000`; edit and hard-reload (Cmd+Shift+R busts the script cache).
@@ -27,9 +35,9 @@ below is superseded on the "placeholder only" point.
 - Commit as `em lorien <em@lanterns.dev>` (automatic via the git conditional-include for
   the Lanterns folder). `main` has branch protection — commit locally; PR/admin-bypass to
   push. No `Co-Authored-By` trailers.
-- Front-end stays **zero-dependency, no build**. A dependency is allowed *only* when a
-  plan needs it — the eventual contact form (server-side email dep) is the one
-  anticipated case; the browser bundle stays hand-written.
+- Front-end stays **no-build, hand-written** (native ES modules, no toolchain). The one
+  dependency is EmailJS's SDK, vendored in `assets/vendor/` and lazy-loaded by the contact
+  form. Don't add others speculatively.
 - **The gate is em's eye** — judge on desktop *and* the portrait-mobile crop, not a
   checklist. Scene chrome (`#160e0e`/`#e7e5de`) is fixed; light/dark affects only popups.
 - Cross-refs: shader → `SPEC-shaders.md` / `HANDOFF-shaders.md`; pages → this doc.
@@ -132,9 +140,12 @@ and fills the popup; `menu.js` owns interaction + routing; `content/en.js` is pu
 
 ## Roadmap (not now)
 
-- **Contact form** + its dependency (after research).
-- **Language translation** — add locale content files + a language switch; data shape is
-  ready for it.
+- **Ambient lake sounds** (em, 2026-07-14) — optional nighttime-at-the-lake audio the user
+  can play. **Muted/paused on load — never autoplay**; a small play/pause control (fits the
+  popup or the scene chrome), respects reduced-motion/quiet preferences. em is sourcing the
+  audio files. A long-term nice-to-have, not urgent.
+- **Language translation** — add locale content files (`content/fr.js` …) + a language
+  switch; the data shape is already ready for it.
 - **CMS** — only if we outgrow ~30 hand-authored posts.
 
 ## Build order (when we build)
