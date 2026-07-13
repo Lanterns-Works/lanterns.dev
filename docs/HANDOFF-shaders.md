@@ -1,48 +1,69 @@
-# Handoff: shader rework — water + lantern light
+# Handoff: lanterns.dev shader scene
 
-*Written 2026-07-12, after the first live sit with the CSS scene. This is the brief for the next working session in this repo. Design/planning docs live in the private plans repo (`plans/lanterns/site.md`); this file is the implementation-side handoff.*
+*Updated 2026-07-13 — the shader shipped. This supersedes the original pre-build
+brief (that version is in git history). Design/planning docs live in the private
+plans repo (`plans/lanterns/site.md`); this is the implementation-side handoff.*
 
-## The verdict that triggered this
+## Status: SHIPPED ✅
 
-The CSS approximations in the first public cut were judged on the real scene and failed:
+The animated WebGL2 scene is **live and the default at https://lanterns.dev** (the
+`?shader` gate was removed 2026-07-13; verified running on the production URL). What's
+in it: displaced water reflection with light-gated glitter glints, a noise-driven
+flame flicker that also drives the dock light-cast, four hand-placed shoreline
+lanterns that wink on over the first ~40s, and a wind-rustled treeline — all coupled
+to **one shared wind envelope** (wind drives MOTION, never glint brightness).
 
-- **Water shimmer** (repeating-gradient streaks, `style.css` `.shimmer`): reads as *lines on the screen*, not water. The technique caps out below believability on this photo.
-- **Lantern flicker** (radial-gradient breathing + JS gusts): the flame itself now dances, but **the light it casts doesn't** — the glow on the dock planks and the water reflection stay constant while the flame moves. Decoupled light reads unnatural and flat.
+The static CSS scene is **retained as the fallback/poster** for reduced-motion,
+save-data, no-WebGL2, and context-loss — the module bows out and the still scene
+shows. Nothing was deleted; nobody gets a broken page.
 
-Decision (em, 2026-07-12): go shaders for both. This is deliberately the one complex thing on the site — it has to be right. Everything else stays boring.
+## Where things live
 
-## The design goal, in two sentences
+- **`scene-shader.js`** — the entire renderer. Raw WebGL2, GLSL as template strings,
+  one fullscreen pass. No build step, no dependencies (and it must stay that way).
+- **`assets/lanterns-mask.png`** — hand-painted region mask: **R = water, G = dock
+  light-cast, B = flame/glass**. A brand asset (see `assets/LICENSE.md`).
+- **`mask-src/`** — the painted source layers (`water_R/dock_G/flame_B.png`) so the
+  mask can be re-edited. `mask-ref.png` is regenerable and gitignored
+  (`sips -Z 1024 assets/lanterns-background-layer.jpg --out mask-ref.png`).
+- **`docs/SPEC-shaders.md`** — the living spec and the source of truth for detail.
+  Read the "Shipped v1/v2" notes: §5 v2 (current water), §6 (lanterns), §6.5 (tree
+  rustle), and the LAUNCHED note at the end of §10. Every tuned number is there.
+- **`docs/how-the-scene-works.md`** — non-technical explainer for stakeholders.
 
-1. **One flame signal drives all the light.** A single time-varying flicker signal (noise-based) must modulate the flame core, the glass halo, the cast light on the dock planks, and the lantern's water reflection together — coherence is the fix for "flat."
-2. **Water that behaves like water.** Barely-there displacement of the plate's water region — calm dusk lake, reflections wobbling slowly — not a ripple effect painted on top.
+## Open / possible next work
 
-## Recommended architecture (validate in research before building)
+1. **Real-iPhone perf gate (do this).** The scene is verified in desktop Chrome and
+   on the live URL, but the SPEC's formal gate — *60fps sustained through a 3-minute
+   sit on a current iPhone, no thermal ramp, no pop at swap* — has **not** been run
+   on a physical device. Cap is DPR 2.0; if it ramps, drop the GL buffer to 1.5×.
+2. **Strip the debug harness** for a pristine public build (~2 min). Still live and
+   harmless/zero-cost when off: `?dbg=1` raw / `2` mask / `3` att, `?lamps` (all lit),
+   `?shadertest` (cover-crop self-check → console). Kept in because em is iterating.
+3. **Facing-gate sign** (§5 v2 watch-item). The glint facet-facing gate uses
+   `-grad.y`; if on close inspection glints sparkle on the "wrong" side of ripples,
+   flip to `grad.y` (one character).
+4. **Water still a touch uniform?** Next lever is a second domain-warp octave (IQ
+   recursive warp); held off for perf headroom. Glint size / calmness knobs are
+   documented in SPEC §5 v2.
+5. **Tree mask.** Rustle uses a *procedural* treeline region (band × darkness gate)
+   and it works. Only paint a `mask2.R` PNG if live viewing shows it catching a
+   non-tree dark region or bleeding at an edge.
 
-- **One `<canvas>` replacing the `.bg` img** inside the existing `.plate` cover-math box. All DOM chrome (wordmark, footer, 404) untouched.
-- **Raw WebGL2 + GLSL fragment shader on a fullscreen triangle**, the plate JPG as a texture. No three.js — it's one quad; the no-dependency rule holds. GLSL lives as template strings in a plain JS file (no build step).
-- **Region control via one hand-authored mask texture** (~256px PNG, tiny): R = water, G = dock light-cast zone, B = flame/glass. Painted once against the plate — for an authored photo this beats procedural masks. (Possible channel A: shoreline-lantern positions, see below.)
-- **Flicker:** fbm/value-noise `signal(t)` as a uniform → flame brightness, halo, dock-cast gain (slightly lagged/softened), reflection modulation. Wind gusts become an envelope on the same signal (the JS gust scheduler can likely retire).
-- **Water:** screen-space UV displacement in the masked region — 2–3 slow noise/sine octaves, amplitude a few px scaling toward the near water, zero at the horizon; plus specular wobble on the reflection band.
-- **Fallback is the current scene:** the static plate + frozen CSS glow remain the poster for `prefers-reduced-motion`, WebGL-context failure, and save-data. Mount the canvas only after a successful context + first frame. **Do not delete the CSS scene layers.**
-- **Perf gate:** 60fps sustained on the gate device (a current iPhone) through a 3-minute sit, no thermal ramp; cap devicePixelRatio ≈ 1.5–2; pause rAF on `document.hidden`.
+## Rules that carry forward (unchanged)
 
-## Constraints that carry forward unchanged
+- **Identity:** commit as `em lorien <em@lanterns.dev>` (automatic via the
+  conditional-include git config for the Lanterns folder). Push **only** with the
+  em-lorien credential, never the work account — GitHub attributes commits and push
+  events to the authenticated user.
+- **`main` has branch protection** (changes-via-PR required); direct pushes go
+  through as an **admin bypass**. Route through a PR if that's ever preferred.
+- **No dependencies, no build step, ever.** Two-color chrome (`#160e0e`/`#e7e5de`);
+  wordmark is the image, never type; only copy is the footer + 404 line. New mask
+  PNGs are brand assets under `assets/LICENSE.md`.
 
-Two-color chrome (`#160e0e`/`#e7e5de`); warm values sampled from the plate's own lamplight; wordmark is the image, never type; only copy = footer + 404 line; no build step, no dependencies; brand-asset license carve-out (any new mask PNG is a brand asset → covered by `assets/LICENSE.md`).
+## How to work here (house convention)
 
-## Open research questions (fan out at session start)
-
-1. **Photo-space water displacement** that avoids the "wobbling jello" tell on stills — precedents and parameter ranges (GLSL image-water effects, flag/water displacement shaders).
-2. **Flame flicker signal shape** — fbm frequency mix that reads as kerosene flame (slow wander + 1–8Hz micro-flicker), plus gust envelope design.
-3. **Mask authoring workflow** — fastest way to paint a 3–4 channel region mask against the plate at ~256px.
-4. **WebGL2 vs WebGPU** — WebGL2-everywhere is the presumed boring-right answer for a company page (the Auras engine's WebGPU/TSL ambitions are a different project with different needs); confirm no reason to deviate.
-5. **iOS Safari specifics** — context-loss handling, Low Power Mode's 30fps rAF throttle (accept or adapt), in-app webviews (IG/TikTok).
-6. **Shoreline lanterns** (queued feature, decided 2026-07-12): points of light in the far-shore dark, each igniting at a random moment in the session, same flicker grammar. Almost certainly folds into this shader as a mask channel + per-point ignition times — design it in rather than bolting on later.
-
-## Suggested loop (house convention)
-
-Research fan-out on the six questions → tight spec in `plans/lanterns/` → single-author spike: shader behind a `?shader` query flag on the live layout, judged on the real iPhone → replace `.shimmer` + `.glow` path → adversarial review → ship. The spike gate is em's eye, not a checklist.
-
-## Repo state when this was written
-
-`main` = the first public cut (CSS shimmer + retuned flicker — the version this handoff deprecates). Site live at https://lanterns.dev (Pages, custom domain, HTTPS enforced). Identity rule for this repo: commits as `em lorien <em@lanterns.dev>` (automatic via conditional-include git config for the Lanterns folder), pushes only with the em-lorien credential — never the work account (see plans-repo memory: GitHub attributes server-side commits and push events to the authenticated user).
+Research the genuine unknowns (fan out) → single-author the change (don't split one
+coherent file) → adversarial review → judge on em's eye. The real gate is the eye,
+not a checklist. `?dbg=2` shows the mask; `?lamps` previews all shoreline lights.
