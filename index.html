@@ -36,24 +36,32 @@
   <footer>lanterns.dev · © 2026</footer>
 
   <div class="menu-bar">
-    <button id="amp" class="amp" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav" hidden>&amp;</button>
+    <button id="amp" class="amp" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav" hidden>
+      <img class="amp-ico amp-white" src="/assets/lanterns-icon-white.png" alt="" width="46" height="28">
+      <img class="amp-ico amp-black" src="/assets/lanterns-icon-black.png" alt="" width="46" height="28">
+    </button>
     <nav id="nav" class="nav" aria-label="Pages" hidden></nav>
   </div>
 
   <section id="popup" class="popup" role="dialog" aria-modal="true" aria-labelledby="popup-title" hidden>
+    <div class="popup-logo" aria-hidden="true">
+      <img class="popup-logo-img logo-black" src="/assets/lanterns-logo_black.png" alt="" width="140" height="24">
+      <img class="popup-logo-img logo-white" src="/assets/lanterns-logo_white.png" alt="" width="140" height="24">
+    </div>
     <div class="popup-panel">
-      <div class="popup-bar">
-        <h2 id="popup-title" class="popup-title"></h2>
-        <div class="popup-controls">
-          <button id="theme-toggle" class="theme-toggle" type="button">AUTO</button>
-          <button id="popup-close" class="popup-close" type="button" aria-label="Close">Close</button>
-        </div>
+      <div class="popup-controls">
+        <button id="theme-toggle" class="theme-toggle" type="button">AUTO</button>
+        <button id="popup-close" class="popup-close" type="button" aria-label="Close">Close</button>
       </div>
+      <nav id="popup-nav" class="popup-nav" aria-label="Pages"></nav>
+      <h2 id="popup-title" class="popup-title"></h2>
       <div class="popup-cols">
         <nav id="popup-side" class="popup-side" aria-label="In this page" hidden></nav>
         <div id="popup-body" class="popup-body" tabindex="-1"></div>
       </div>
+      <p class="popup-copyright">lanterns.dev · © 2026</p>
     </div>
+    <div class="popup-lantern" aria-hidden="true"></div>
   </section>
 
   <script src="/main.js" defer></script>

@@ -109,7 +109,7 @@ header {
 
 .wordmark {
   display: block;
-  width: clamp(140px, 20vw, 200px);
+  width: 140px;
   height: auto;
 }
 
