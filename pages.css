@@ -37,7 +37,7 @@
   padding: 0;
   background: none;
   cursor: pointer;
-  width: clamp(38px, 5.4vmin, 52px);
+  width: 40px;
   aspect-ratio: 524 / 322;
   opacity: 0.9;
   transition: opacity 0.25s ease;
@@ -72,6 +72,8 @@ body.nav-open .nav {
   transform: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
+/* the strip isn't part of the popup — hide it once a page is open */
+body.popup-open .nav { display: none; }
 
 .nav-item {
   font-size: clamp(11px, 1.5vmin, 13px);
@@ -329,23 +331,29 @@ body.popup-open .popup-panel { opacity: 0.8; transform: none; }
   color: var(--muted);
 }
 
-/* ---------- the roaming amber lantern (the popup's signature) ---------- */
-/* one amber lantern fades in at a random spot while the popup is open; JS sets
-   position + toggles .lit. amber via masking the white icon; glow via shadow. */
+/* ---------- the roaming amber lamp (the popup's signature) ---------- */
+/* one amber point-glow fades in at a random spot while the popup is open,
+   matching the scene's shoreline lamps (WARM = rgb 255,158,71). JS sets the
+   position + toggles .lit. It leaves WITH the popup — no lingering after close. */
 .popup-lantern {
   position: absolute;
-  width: 30px;
-  aspect-ratio: 524 / 322;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
   z-index: 4;
   pointer-events: none;
-  background: #f2a94a;
-  -webkit-mask: url('/assets/lanterns-icon-white.png') center / contain no-repeat;
-  mask: url('/assets/lanterns-icon-white.png') center / contain no-repeat;
+  background: radial-gradient(circle,
+    rgba(255, 202, 143, 0.98) 0%,
+    rgba(255, 158, 71, 0.85) 20%,
+    rgba(255, 158, 71, 0.32) 44%,
+    rgba(255, 158, 71, 0) 70%);
+  filter: drop-shadow(0 0 7px rgba(255, 150, 70, 0.55));
   opacity: 0;
-  filter: drop-shadow(0 0 10px rgba(255, 176, 92, 0.75));
-  transition: opacity 1.4s ease;
+  transition: opacity 1.5s ease;
 }
-.popup-lantern.lit { opacity: 0.92; }
+.popup-lantern.lit { opacity: 0.95; }
+/* leaves with the popup — no slow fade lingering after close */
+body:not(.popup-open) .popup-lantern { opacity: 0; transition-duration: 0.34s; }
 
 /* ---------- contact form ---------- */
 
@@ -428,6 +436,7 @@ body.popup-open .popup-panel { opacity: 0.8; transform: none; }
 
   .popup { top: 0; left: 0; right: 0; bottom: 0; width: auto; }
   .popup-panel { padding-left: clamp(20px, 6vw, 40px); padding-right: clamp(20px, 6vw, 40px); }
+  body.popup-open .popup-panel { opacity: 0.9; } /* more opaque on mobile for readability */
   .popup-controls { right: clamp(20px, 6vw, 40px); }
 
   .popup-nav {

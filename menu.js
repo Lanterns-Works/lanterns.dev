@@ -82,7 +82,7 @@ function openPage(route) {
   if (route.name === 'contact') wireContactForm(document.getElementById('contact-form'));
   mount.body.scrollTop = 0;
   setActiveNav(route.name);
-  openNav(); // desktop strip acts as tabs; harmless on mobile
+  closeNav(); // the strip isn't part of the popup — collapse it once a page is open
   if (first) mount.body.focus();
 }
 
@@ -178,8 +178,8 @@ function startLantern() {
     lantern.style.left = Math.round(pad + Math.random() * w) + 'px';
     lantern.style.top = Math.round(pad + Math.random() * h) + 'px';
     lantern.classList.add('lit');
-    setTimeout(() => lantern.classList.remove('lit'), 1700);
-    lanternTimer = setTimeout(tick, 3000 + Math.random() * 4500);
+    setTimeout(() => lantern.classList.remove('lit'), 4500); // dwell before fading out
+    lanternTimer = setTimeout(tick, 2600 + Math.random() * 4200);
   };
   clearTimeout(lanternTimer);
   lanternTimer = setTimeout(tick, 1400 + Math.random() * 2600);
