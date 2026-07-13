@@ -15,8 +15,10 @@ start at step 1 (popup shell + `&`/menu + hash routing). It's feature work → r
 through the build loop (brainstorm is done; go to a written implementation plan, then
 build). Build against **placeholder content**; em supplies real copy later.
 
-**Do NOT build the contact form yet** — it's deferred until em picks the email-sending
-dependency. Ship Contact as a placeholder page (§6).
+**Contact form is now unblocked** (em chose **EmailJS**, 2026-07-13) — it ships as a real
+working form in this build, not a placeholder. EmailJS is client-side, so no server and no
+host migration. Implementation details + build sequence live in `PLAN-pages-build.md`; §6
+below is superseded on the "placeholder only" point.
 
 **Run it:** no build step. `python3 -m http.server --directory <repo>` then open
 `localhost:8000`; edit and hard-reload (Cmd+Shift+R busts the script cache).
@@ -41,9 +43,8 @@ dependency. Ship Contact as a placeholder page (§6).
   **never for the contact form**.
 - **Blog: ~30 posts max**, dead simple. Click a title → show the post. **No search, no
   tags.** Add a CMS only if we outgrow this.
-- **Contact form is deferred (TBD).** The Contact page ships as a placeholder now; the
-  form + its email-sending dep come later, after em researches the exact dependency. No
-  third-party SaaS relay when we do build it. (See Roadmap.)
+- **Contact form: EmailJS** (chosen 2026-07-13, was TBD). Client-side send, no server,
+  no host migration. Built as a live form in this cycle — see `PLAN-pages-build.md`.
 
 ## Architecture
 
@@ -124,8 +125,7 @@ and fills the popup; `menu.js` owns interaction + routing; `content/en.js` is pu
 
 ## Open decisions / deferred
 
-1. **Contact form dependency** — em researches the exact email-sending dep before we
-   build it. Whole form is **TBD**.
+1. **Contact form dependency** — RESOLVED: **EmailJS** (2026-07-13). Built this cycle.
 2. **Mobile `&` menu treatment** — horizontal wrap vs. scroll; tune by eye.
 3. **Active-section highlight (scrollspy)** — deferred; anchors work without it.
 4. **Host** — stays as-is for now; revisit only for the site's own reasons.
