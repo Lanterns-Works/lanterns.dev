@@ -117,14 +117,23 @@ body.nav-open .nav-item {
   bottom: 0;
   width: min(680px, 52vw);
 }
+/* AUTO (no data-theme) follows the OS; an explicit light choice opts out. */
 @media (prefers-color-scheme: dark) {
-  .popup {
+  .popup:not([data-theme='light']) {
     --bg: #171010;
     --fg: #e7e5de;
     --muted: rgba(231, 229, 222, 0.55);
     --accent: #e0a24e;
     --edge: rgba(231, 229, 222, 0.14);
   }
+}
+/* explicit dark wins even under a light OS */
+.popup[data-theme='dark'] {
+  --bg: #171010;
+  --fg: #e7e5de;
+  --muted: rgba(231, 229, 222, 0.55);
+  --accent: #e0a24e;
+  --edge: rgba(231, 229, 222, 0.14);
 }
 
 .popup[hidden] { display: none; }
@@ -164,7 +173,15 @@ body.nav-open .nav-item {
   color: var(--accent);
 }
 
-.popup-close {
+.popup-controls {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex: 0 0 auto;
+}
+
+.popup-close,
+.theme-toggle {
   appearance: none;
   border: 0;
   background: none;
@@ -177,7 +194,23 @@ body.nav-open .nav-item {
   transition: color 0.2s ease;
 }
 .popup-close:hover,
-.popup-close:focus-visible { color: var(--fg); }
+.popup-close:focus-visible,
+.theme-toggle:hover,
+.theme-toggle:focus-visible { color: var(--fg); }
+
+/* keep width steady as the label swaps between AUTO and an icon */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.4em;
+  line-height: 1;
+}
+.theme-toggle svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
 
 .popup-cols {
   display: flex;

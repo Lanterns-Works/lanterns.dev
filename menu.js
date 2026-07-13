@@ -124,7 +124,42 @@ function trapFocus(e) {
   }
 }
 
-// --- go: reveal chrome, honor any deep link on load ---
+// --- light / dark: tri-state AUTO -> sun -> moon, popup-only, persisted ---
+const THEME_KEY = 'lanterns-theme';
+const THEMES = ['auto', 'light', 'dark'];
+const SUN =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">' +
+  '<circle cx="12" cy="12" r="4.2"/>' +
+  '<path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7"/></svg>';
+const MOON =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.3 6.3 0 0 0 10.5 10.5z"/></svg>';
+const THEME_FACE = { auto: 'AUTO', light: SUN, dark: MOON };
+const THEME_LABEL = {
+  auto: 'Theme: auto — follows your system. Activate to force light.',
+  light: 'Theme: light. Activate to force dark.',
+  dark: 'Theme: dark. Activate to return to auto.',
+};
+
+const themeBtn = $('#theme-toggle');
+const readTheme = () => {
+  const t = localStorage.getItem(THEME_KEY);
+  return THEMES.includes(t) ? t : 'auto';
+};
+function applyTheme(t) {
+  if (t === 'auto') popup.removeAttribute('data-theme');
+  else popup.setAttribute('data-theme', t);
+  themeBtn.innerHTML = THEME_FACE[t];
+  themeBtn.setAttribute('aria-label', THEME_LABEL[t]);
+}
+themeBtn.addEventListener('click', () => {
+  const next = THEMES[(THEMES.indexOf(readTheme()) + 1) % THEMES.length];
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+});
+
+// --- go: reveal chrome, restore theme, honor any deep link on load ---
 amp.hidden = false;
 nav.removeAttribute('hidden');
+applyTheme(readTheme());
 applyHash();
