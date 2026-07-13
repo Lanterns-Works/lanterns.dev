@@ -1,0 +1,463 @@
+/* lanterns.dev — the lantern menu + popups.
+   Extends the scene's system: Nimbus Mono throughout, the two-color chrome, a
+   single lantern-amber accent. Popups are paper (light) / ink (dark), translucent
+   so the scene stays alive behind them; the scene chrome never changes. */
+
+/* Richer type within the one family — files already ship in assets/fonts. */
+@font-face {
+  font-family: 'Nimbus Mono';
+  src: url('/assets/fonts/NimbusMono-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nimbus Mono';
+  src: url('/assets/fonts/NimbusMono-Oblique.woff2') format('woff2');
+  font-weight: 400;
+  font-style: oblique;
+  font-display: swap;
+}
+
+/* ---------- the lantern toggle + nav strip (bottom-left desktop) ---------- */
+
+.menu-bar {
+  position: fixed;
+  left: clamp(16px, 4vmin, 40px);
+  bottom: clamp(12px, 3vmin, 28px);
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 30px);
+  z-index: 20;
+}
+
+.amp {
+  position: relative;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  width: 40px;
+  aspect-ratio: 524 / 322;
+  opacity: 0.9;
+  transition: opacity 0.25s ease;
+}
+.amp:hover,
+.amp:focus-visible { opacity: 1; }
+/* two color variants stacked → crossfade white (on the scene) / black (over a light popup) */
+.amp-ico {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.35s ease;
+}
+.amp-black { opacity: 0; }
+.amp.on-light .amp-white { opacity: 0; }
+.amp.on-light .amp-black { opacity: 1; }
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.2vw, 30px);
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+}
+body.nav-open .nav {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+/* the strip isn't part of the popup — hide it once a page is open */
+body.popup-open .nav { display: none; }
+
+.nav-item {
+  font-size: clamp(11px, 1.5vmin, 13px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+.nav .nav-item { color: var(--white); opacity: 0.7; }
+.nav .nav-item:hover,
+.nav .nav-item:focus-visible { opacity: 1; }
+.nav .nav-item.is-active { opacity: 1; color: #e0a24e; }
+
+/* strip items fan out as it opens */
+body.nav-open .nav .nav-item { animation: nav-in 0.32s ease both; }
+.nav .nav-item:nth-child(1) { animation-delay: 0.02s; }
+.nav .nav-item:nth-child(2) { animation-delay: 0.06s; }
+.nav .nav-item:nth-child(3) { animation-delay: 0.10s; }
+.nav .nav-item:nth-child(4) { animation-delay: 0.14s; }
+.nav .nav-item:nth-child(5) { animation-delay: 0.18s; }
+@keyframes nav-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 0.7; transform: none; }
+}
+
+/* the background wordmark bows out while the popup (with its own logo) is up */
+header { transition: opacity 0.34s ease; }
+body.popup-open header { opacity: 0; pointer-events: none; }
+
+/* ---------- the popup ---------- */
+
+.popup {
+  /* paper by default; dark scheme / explicit dark flip to ink below */
+  --bg: #e7e5de;
+  --fg: #160e0e;
+  --muted: rgba(22, 14, 14, 0.55);
+  --accent: #b5701f;
+  --edge: rgba(22, 14, 14, 0.14);
+
+  position: fixed;
+  z-index: 15;
+  /* desktop: a column anchored left, lantern glow peeking at right */
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(680px, 52vw);
+}
+/* dark palette — applyTheme() resolves AUTO to a concrete data-theme, so this is
+   the single source (base .popup above is the light palette). */
+.popup[data-theme='dark'] {
+  --bg: #171010;
+  --fg: #e7e5de;
+  --muted: rgba(231, 229, 222, 0.55);
+  --accent: #e0a24e;
+  --edge: rgba(231, 229, 222, 0.14);
+}
+.popup[hidden] { display: none; }
+
+/* the popup logo — sits exactly where the background wordmark is, for a seamless
+   swap; unlike the background one it follows the popup's light/dark. Full opacity
+   (outside the translucent panel) so it stays crisp. */
+.popup-logo {
+  position: absolute;
+  top: clamp(16px, 4vmin, 40px);
+  left: clamp(16px, 4vmin, 40px);
+  width: 140px;
+  height: 24px;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.34s ease;
+}
+body.popup-open .popup-logo { opacity: 1; }
+.popup-logo-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 140px;
+  height: auto;
+  transition: opacity 0.45s ease;
+}
+.logo-white { opacity: 0; }
+.logo-black { opacity: 1; }
+.popup[data-theme='dark'] .logo-black { opacity: 0; }
+.popup[data-theme='dark'] .logo-white { opacity: 1; }
+
+.popup-panel {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  display: flex;
+  flex-direction: column;
+  /* generous top padding clears the logo (item: content sits below it) */
+  padding: clamp(78px, 12vmin, 108px) clamp(24px, 4vmin, 48px) 0;
+  position: relative;
+  z-index: 1;
+  /* translucent so the scene shows through; enter/exit + gentle theme fade */
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: opacity 0.34s ease, transform 0.34s ease,
+    background-color 0.5s ease, color 0.5s ease;
+}
+body.popup-open .popup-panel { opacity: 0.8; transform: none; }
+
+.popup-controls {
+  position: absolute;
+  top: clamp(16px, 4vmin, 40px);
+  right: clamp(24px, 4vmin, 48px);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  z-index: 2;
+}
+
+.popup-close,
+.theme-toggle {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.popup-close:hover,
+.popup-close:focus-visible,
+.theme-toggle:hover,
+.theme-toggle:focus-visible { color: var(--fg); }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.4em;
+  line-height: 1;
+}
+.theme-toggle svg { width: 15px; height: 15px; display: block; }
+
+/* in-popup page nav — mobile only (desktop uses the bottom strip) */
+.popup-nav { display: none; }
+
+.popup-title {
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: lowercase;
+  margin-bottom: clamp(18px, 3vmin, 32px);
+  transition: color 0.5s ease;
+}
+
+.popup-cols {
+  display: flex;
+  gap: clamp(20px, 3vw, 44px);
+  min-height: 0;
+  flex: 1;
+}
+
+.popup-side {
+  flex: 0 0 auto;
+  width: clamp(104px, 12vw, 148px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 6px;
+}
+.popup-side[hidden] { display: none; }
+
+.side-link {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  line-height: 1.5;
+  transition: color 0.2s ease;
+}
+.side-link:hover,
+.side-link:focus-visible { color: var(--fg); }
+.side-link.is-active { color: var(--accent); }
+
+.side-post { display: flex; flex-direction: column; gap: 3px; }
+.side-post-date {
+  font-style: oblique;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.popup-body {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  max-width: 64ch;
+  font-size: clamp(14px, 1.7vmin, 16px);
+  line-height: 1.75;
+  outline: none;
+  padding-bottom: clamp(120px, 34vh, 340px); /* scroll well past the content */
+  transition: color 0.5s ease;
+}
+.popup-body p { margin-bottom: 1.1em; }
+.popup-body a { color: var(--accent); text-underline-offset: 3px; }
+.popup-body h2 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 2.2em 0 0.9em;
+  transition: color 0.5s ease;
+}
+.popup-body h2:first-child { margin-top: 0; }
+
+.works-list { list-style: none; }
+.works-list li { margin-bottom: 0.9em; }
+.work-title { font-weight: 700; }
+
+.back {
+  display: inline-block;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  margin-bottom: 1.6em;
+  transition: color 0.2s ease;
+}
+.back:hover,
+.back:focus-visible { color: var(--fg); }
+
+.post-date { font-style: oblique; color: var(--muted); margin-bottom: 0.3em; }
+.post-title {
+  font-size: clamp(19px, 2.6vmin, 23px);
+  font-weight: 400;
+  margin-bottom: 1em;
+}
+
+/* copyright — inside the popup on mobile (removed from the footer there) */
+.popup-copyright {
+  display: none;
+  padding: clamp(24px, 6vmin, 48px) 0 clamp(24px, 6vmin, 40px);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* ---------- the roaming amber lamp (the popup's signature) ---------- */
+/* one amber point-glow fades in at a random spot while the popup is open,
+   matching the scene's shoreline lamps (WARM = rgb 255,158,71). JS sets the
+   position + toggles .lit. It leaves WITH the popup — no lingering after close. */
+.popup-lantern {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(circle,
+    rgba(255, 202, 143, 0.98) 0%,
+    rgba(255, 158, 71, 0.85) 22%,
+    rgba(255, 158, 71, 0.28) 46%,
+    rgba(255, 158, 71, 0) 66%);
+  filter: drop-shadow(0 0 4px rgba(255, 150, 70, 0.4));
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+.popup-lantern.lit { opacity: 0.95; }
+/* leaves with the popup — no slow fade lingering after close */
+body:not(.popup-open) .popup-lantern { opacity: 0; transition-duration: 0.34s; }
+
+/* ---------- contact form ---------- */
+
+.contact-form { margin-top: 0.4em; max-width: 42ch; }
+.field { margin-bottom: 1.3em; }
+.field label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.5em;
+}
+.field input,
+.field textarea {
+  width: 100%;
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--edge);
+  border-radius: 0;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 15px;
+  padding: 6px 0;
+  transition: border-color 0.2s ease, color 0.5s ease;
+}
+.field textarea { resize: vertical; line-height: 1.6; }
+.field input:focus,
+.field textarea:focus { outline: none; border-color: var(--accent); }
+.field input[aria-invalid='true'],
+.field textarea[aria-invalid='true'] { border-color: #cc5c3d; }
+
+.field-error { min-height: 1.05em; margin-top: 0.4em; font-size: 12px; color: #cc5c3d; }
+
+/* honeypot — off-screen, hidden from the a11y tree via aria-hidden in markup */
+.hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.form-foot { display: flex; align-items: center; gap: 18px; margin-top: 1.5em; }
+.form-submit {
+  appearance: none;
+  background: none;
+  border: 1px solid var(--fg);
+  border-radius: 0;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 10px 22px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+.form-submit:hover,
+.form-submit:focus-visible { background: var(--fg); color: var(--bg); }
+.form-submit:disabled { opacity: 0.5; cursor: default; }
+
+.form-status { font-size: 12px; color: var(--muted); }
+.form-status.is-error { color: #cc5c3d; }
+
+/* ---------- mobile: popup covers the whole scene; menu lives inside it ---------- */
+@media (max-width: 760px) {
+  .menu-bar {
+    left: auto;
+    bottom: auto;
+    top: clamp(16px, 4vmin, 28px);
+    right: clamp(16px, 4vmin, 28px);
+  }
+  body.popup-open .menu-bar { display: none; } /* the popup carries its own close */
+  .nav { display: none; }                       /* strip replaced by the in-popup nav */
+  footer { display: none; }                     /* copyright moves into the popup */
+
+  .popup { top: 0; left: 0; right: 0; bottom: 0; width: auto; }
+  .popup-panel { padding-left: clamp(20px, 6vw, 40px); padding-right: clamp(20px, 6vw, 40px); }
+  body.popup-open .popup-panel { opacity: 0.9; } /* more opaque on mobile for readability */
+  .popup-controls { right: clamp(20px, 6vw, 40px); }
+
+  .popup-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin-bottom: clamp(20px, 4vmin, 34px);
+  }
+  .popup-nav .nav-item { color: var(--muted); font-size: 14px; }
+  .popup-nav .nav-item:hover,
+  .popup-nav .nav-item:focus-visible { color: var(--fg); }
+  .popup-nav .nav-item.is-active { color: var(--accent); }
+
+  .popup-copyright { display: block; }
+  .popup-title { font-size: 18px; }
+  .popup-cols { flex-direction: column; gap: 18px; }
+  .popup-side { width: auto; flex-direction: row; flex-wrap: wrap; gap: 10px 18px; }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  body.nav-open .nav,
+  body.nav-open .nav .nav-item,
+  .popup-panel,
+  .popup-logo,
+  .popup-logo-img,
+  .amp-ico,
+  header {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+  .popup-lantern { display: none; }
+}
