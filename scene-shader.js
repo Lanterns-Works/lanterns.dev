@@ -21,6 +21,7 @@
   const AR = 3840 / 2143;          // plate aspect (1.79188)
   const DPR_CAP = 2.0;             // §7 fill/thermal cap
   const PHOTO = '/assets/lanterns-background-layer.jpg';
+  const MASK = '/assets/lanterns-mask.png';
   const FLAME = [0.73, 0.63];      // --flame-x / --flame-y (style.css)
   const HORIZON = 0.40, DOCK = 0.75;
   const DEBUG = (location.search.match(/[?&]dbg=(\d)/) || [])[1] | 0; // 0 off,1 raw,2 mask,3 att
@@ -106,6 +107,7 @@
   uniform float uLampIgnite[MAX_LAMPS];
   uniform float uLampFlicker[MAX_LAMPS];
   uniform sampler2D uPhoto;
+  uniform sampler2D uMask;
   out vec4 outColor;
 
   const vec3 WARM = vec3(1.00, 0.62, 0.28);   // sampled-ish from the lamplight
@@ -121,18 +123,6 @@
     float a = hash21(i), b = hash21(i + vec2(1, 0));
     float c = hash21(i + vec2(0, 1)), d = hash21(i + vec2(1, 1));
     return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
-  }
-
-  // Placeholder region mask (§3). Replace with texture(uMask, uv).rgb once painted.
-  // R = water, G = dock cast zone, B = flame/glass.
-  vec3 procMask(vec2 uv) {
-    float v = uv.y;
-    float water = smoothstep(uHorizon, uHorizon + 0.10, v) * (1.0 - smoothstep(uDock - 0.05, uDock + 0.05, v));
-    water *= 1.0 - smoothstep(0.62, 0.72, uv.x) * smoothstep(0.55, 0.70, v); // carve lantern column
-    float dock = smoothstep(uDock + 0.01, uDock + 0.09, v);
-    float d = length((uv - uFlamePos) * vec2(1.0, 1.0 / 1.79188)); // aspect-correct
-    float flame = smoothstep(0.11, 0.02, d);
-    return vec3(clamp(water, 0.0, 1.0), clamp(dock, 0.0, 1.0), clamp(flame, 0.0, 1.0));
   }
 
   // Vertical-dominant anisotropic displacement, in UV (§5). Amplitudes px @ 3840.
@@ -157,7 +147,7 @@
     // §2: fragment → plate UV (gl_FragCoord is bottom-left; plate math is top-left)
     vec2 fragTL = vec2(gl_FragCoord.x, uResolution.y - gl_FragCoord.y);
     vec2 uv = (fragTL - uPlateOrigin) / uPlateSize;
-    vec3 mask = procMask(uv);
+    vec3 mask = texture(uMask, uv).rgb;   // hand-painted region mask (§3): R water, G dock, B flame
 
     // --- water: displacement of the baked reflection (§5) ---
     float band = clamp((uv.y - uHorizon) / (uDock - uHorizon), 0.0, 1.0);
@@ -251,7 +241,7 @@
   const U = {};
   for (const n of ['uResolution', 'uPlateOrigin', 'uPlateSize', 'uTime',
     'uFlame', 'uHalo', 'uCast', 'uWind', 'uTreeWind', 'uFlamePos', 'uHorizon', 'uDock', 'uDebug',
-    'uLampCount', 'uLampPos', 'uLampIgnite', 'uLampFlicker', 'uPhoto']) {
+    'uLampCount', 'uLampPos', 'uLampIgnite', 'uLampFlicker', 'uPhoto', 'uMask']) {
     U[n] = gl.getUniformLocation(prog, n);
   }
   gl.uniform2f(U.uFlamePos, FLAME[0], FLAME[1]);
@@ -272,26 +262,39 @@
   gl.uniform2fv(U.uLampPos, lampPos);
   gl.uniform1fv(U.uLampIgnite, lampIgnite);
 
-  // ---- photo texture: display-matched (§3) ----
-  const tex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  // ---- textures: photo (unit 0, display-matched) + mask (unit 1, raw data) (§3) ----
+  function makeTex(unit) {
+    const t = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    return t;
+  }
+  const tex = makeTex(0), maskTex = makeTex(1);
+  let photoLoaded = false, maskLoaded = false;
 
-  let photoLoaded = false;
-  const img = new Image();
-  img.onload = () => {
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, img);
-    gl.uniform1i(U.uPhoto, 0);
-    photoLoaded = true;
-    resize();
-    start();
-  };
-  img.onerror = () => { /* keep static poster */ };
-  img.src = PHOTO;
+  function loadTex(url, unit, tObj, colorspace, done) {
+    const im = new Image();
+    im.onload = () => {
+      gl.activeTexture(gl.TEXTURE0 + unit);
+      gl.bindTexture(gl.TEXTURE_2D, tObj);
+      gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, colorspace);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, im);
+      done();
+    };
+    im.onerror = () => { /* keep static poster */ };
+    im.src = url;
+  }
+  // photo = browser-managed (matches the fallback img); mask = NONE so painted values survive (§3)
+  loadTex(PHOTO, 0, tex, gl.BROWSER_DEFAULT_WEBGL,
+    () => { gl.uniform1i(U.uPhoto, 0); photoLoaded = true; resize(); start(); });
+  loadTex(MASK, 1, maskTex, gl.NONE,
+    () => { gl.uniform1i(U.uMask, 1); maskLoaded = true; start(); });
+  gl.activeTexture(gl.TEXTURE0);
 
   // ---- sizing (§7: from innerWidth/innerHeight, never vh) ----
   function resize() {
@@ -379,7 +382,7 @@
     raf = requestAnimationFrame(frame);
   }
   function start() {
-    if (running || !photoLoaded) return;
+    if (running || !photoLoaded || !maskLoaded) return;
     running = true; lastMs = performance.now(); raf = requestAnimationFrame(frame);
   }
   function stop() { running = false; cancelAnimationFrame(raf); }
