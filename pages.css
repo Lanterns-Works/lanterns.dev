@@ -1,0 +1,304 @@
+/* lanterns.dev — the & menu + popups.
+   Extends the scene's system: Nimbus Mono throughout, the two-color chrome, a
+   single lantern-amber accent. Popups are paper (light) / ink (dark); the scene
+   chrome (#160e0e / #e7e5de) never changes. */
+
+/* Richer type within the one family — files already ship in assets/fonts. */
+@font-face {
+  font-family: 'Nimbus Mono';
+  src: url('/assets/fonts/NimbusMono-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nimbus Mono';
+  src: url('/assets/fonts/NimbusMono-Oblique.woff2') format('woff2');
+  font-weight: 400;
+  font-style: oblique;
+  font-display: swap;
+}
+
+/* ---------- the & menu (bottom-left, footer baseline family) ---------- */
+
+.menu-bar {
+  position: fixed;
+  left: clamp(16px, 4vmin, 40px);
+  bottom: clamp(12px, 3vmin, 28px);
+  display: flex;
+  align-items: baseline;
+  gap: clamp(14px, 2.4vw, 30px);
+  z-index: 20;
+}
+
+.amp {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--white);
+  font-family: inherit;
+  font-size: clamp(26px, 4.4vmin, 44px);
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.25s ease, color 0.25s ease;
+}
+.amp:hover,
+.amp:focus-visible {
+  opacity: 1;
+  color: #e0a24e;
+}
+
+.nav {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(14px, 2.2vw, 30px);
+  /* collapsed until the & expands it */
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+}
+body.nav-open .nav {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.nav-item {
+  color: var(--white);
+  font-size: clamp(11px, 1.5vmin, 13px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  /* staggered reveal */
+  translate: 0;
+}
+.nav-item:hover,
+.nav-item:focus-visible {
+  opacity: 1;
+}
+.nav-item.is-active {
+  opacity: 1;
+  color: #e0a24e;
+}
+/* fan the items out as the strip opens */
+body.nav-open .nav-item {
+  animation: nav-in 0.32s ease both;
+}
+.nav-item:nth-child(1) { animation-delay: 0.02s; }
+.nav-item:nth-child(2) { animation-delay: 0.06s; }
+.nav-item:nth-child(3) { animation-delay: 0.10s; }
+.nav-item:nth-child(4) { animation-delay: 0.14s; }
+.nav-item:nth-child(5) { animation-delay: 0.18s; }
+@keyframes nav-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 0.7; transform: none; }
+}
+
+/* ---------- the popup ---------- */
+
+.popup {
+  /* paper by default; dark scheme flips to ink below */
+  --bg: #e7e5de;
+  --fg: #160e0e;
+  --muted: rgba(22, 14, 14, 0.55);
+  --accent: #b5701f;
+  --edge: rgba(22, 14, 14, 0.14);
+
+  position: fixed;
+  z-index: 15;
+  /* desktop: a column anchored to the left, lantern glow peeking at right */
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(680px, 52vw);
+}
+@media (prefers-color-scheme: dark) {
+  .popup {
+    --bg: #171010;
+    --fg: #e7e5de;
+    --muted: rgba(231, 229, 222, 0.55);
+    --accent: #e0a24e;
+    --edge: rgba(231, 229, 222, 0.14);
+  }
+}
+
+.popup[hidden] { display: none; }
+
+.popup-panel {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  border-right: 1px solid var(--edge);
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  padding: clamp(28px, 5vmin, 56px) clamp(24px, 4vmin, 48px);
+  animation: popup-in 0.34s ease both;
+}
+@keyframes popup-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.popup-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: clamp(20px, 3.5vmin, 40px);
+}
+
+.popup-title {
+  font-size: clamp(28px, 5vmin, 46px);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: lowercase;
+}
+.popup-title::after {
+  content: '.'; /* echoes the "lanterns." wordmark */
+  color: var(--accent);
+}
+
+.popup-close {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.popup-close:hover,
+.popup-close:focus-visible { color: var(--fg); }
+
+.popup-cols {
+  display: flex;
+  gap: clamp(20px, 3vw, 44px);
+  min-height: 0; /* let the body scroll instead of the panel */
+  flex: 1;
+}
+
+/* the in-popup sidebar (section anchors or post list) */
+.popup-side {
+  flex: 0 0 auto;
+  width: clamp(104px, 12vw, 148px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 6px;
+}
+.popup-side[hidden] { display: none; }
+
+.side-link {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  line-height: 1.5;
+  transition: color 0.2s ease;
+}
+.side-link:hover,
+.side-link:focus-visible { color: var(--fg); }
+.side-link.is-active { color: var(--accent); }
+
+.side-post { display: flex; flex-direction: column; gap: 3px; }
+.side-post-date {
+  font-style: oblique;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+/* the reading column — its own scroll so the page body never moves */
+.popup-body {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  max-width: 64ch;
+  font-size: clamp(14px, 1.7vmin, 16px);
+  line-height: 1.75;
+  outline: none; /* focus lands here on open; the panel is the visible cue */
+}
+.popup-body p { margin-bottom: 1.1em; }
+.popup-body a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+.popup-body h2 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 2.2em 0 0.9em;
+}
+.popup-body h2:first-child { margin-top: 0; }
+
+.works-list { list-style: none; }
+.works-list li { margin-bottom: 0.9em; }
+.work-title { font-weight: 700; }
+
+.back {
+  display: inline-block;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  margin-bottom: 1.6em;
+}
+.back:hover,
+.back:focus-visible { color: var(--fg); }
+
+.post-date {
+  font-style: oblique;
+  color: var(--muted);
+  margin-bottom: 0.3em;
+}
+.post-title {
+  font-size: clamp(20px, 3vmin, 26px);
+  font-weight: 700;
+  margin-bottom: 1em;
+}
+
+/* ---------- mobile: popup covers most of the scene, glow peeks up top ---------- */
+@media (max-width: 760px) {
+  .popup {
+    top: 14vh;
+    left: 0;
+    right: 0;
+    width: auto;
+  }
+  .popup-panel {
+    border-right: 0;
+    border-top: 1px solid var(--edge);
+  }
+  .popup-cols { flex-direction: column; gap: 18px; }
+  .popup-side {
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+  }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  body.nav-open .nav,
+  body.nav-open .nav-item,
+  .popup-panel {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}

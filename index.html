@@ -17,6 +17,7 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="preload" href="/assets/fonts/NimbusMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/pages.css">
 </head>
 <body>
   <main class="scene" aria-label="A lit lantern on a wooden dock at dusk, on a calm lake">
@@ -33,7 +34,27 @@
     <img class="wordmark" src="/assets/lanterns-logo_white.png" width="1500" height="252" alt="lanterns.">
   </header>
   <footer>lanterns.dev · © 2026</footer>
+
+  <div class="menu-bar">
+    <button id="amp" class="amp" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav" hidden>&amp;</button>
+    <nav id="nav" class="nav" aria-label="Pages" hidden></nav>
+  </div>
+
+  <section id="popup" class="popup" role="dialog" aria-modal="true" aria-labelledby="popup-title" hidden>
+    <div class="popup-panel">
+      <div class="popup-bar">
+        <h2 id="popup-title" class="popup-title"></h2>
+        <button id="popup-close" class="popup-close" type="button" aria-label="Close">Close</button>
+      </div>
+      <div class="popup-cols">
+        <nav id="popup-side" class="popup-side" aria-label="In this page" hidden></nav>
+        <div id="popup-body" class="popup-body" tabindex="-1"></div>
+      </div>
+    </div>
+  </section>
+
   <script src="/main.js" defer></script>
   <script src="/scene-shader.js" defer></script>
+  <script src="/menu.js" type="module"></script>
 </body>
 </html>
