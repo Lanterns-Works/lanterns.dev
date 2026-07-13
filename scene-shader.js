@@ -125,22 +125,34 @@
     return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
   }
 
-  // Vertical-dominant anisotropic displacement, in UV (§5). Amplitudes px @ 3840.
-  vec2 waterDisp(vec2 uv, float t) {
-    float nA = vnoise2(vec2(uv.x * 2.4, uv.y * 8.9)  + vec2(0.0, t * 0.09)) - 0.5; // swell λ1600/240
-    float nB = vnoise2(vec2(uv.x * 5.5, uv.y * 22.6) + vec2(0.0, t * 0.20)) - 0.5; // chop  λ700/95
-    float nH = vnoise2(vec2(uv.x * 3.2, uv.y * 7.1)  + vec2(t * 0.07, 0.0)) - 0.5; // horiz λ1200/300
-    float dyPx = 6.4 * nA + 3.1 * nB;            // peak ~9.5px (livelier twilight ripple)
-    float dxPx = 2.4 * nH;
-    return vec2(dxPx / 3840.0, dyPx / 2143.0);
+  // Sharp directional micro-wave (afl_ext/Alekseev, ShaderToy MdXyzX): exp(sin(x)-1)
+  // sits near 0 most of the period, spikes narrowly to 1 at the crest — mostly-flat
+  // water with an occasional catching ridge. .x = height ~[0,1]; .y = along-dir slope.
+  vec2 wavedx(vec2 pos, vec2 dir, float freq, float phase) {
+    float x = dot(dir, pos) * freq + phase;
+    float w = exp(sin(x) - 1.0);
+    return vec2(w, w * cos(x));
   }
 
-  // Fine wave-height field for the ripple GLINTS — the "alive" signal. Horizontally
-  // elongated crests (low x-freq, high y-freq) scrolling toward the viewer. ~[0,1].
-  float waveH(vec2 uv, float t) {
-    float a = vnoise2(vec2(uv.x * 4.0, uv.y * 20.0) + vec2( t * 0.05, t * 0.28));
-    float b = vnoise2(vec2(uv.x * 8.0, uv.y * 40.0) + vec2(-t * 0.04, t * 0.46));
-    return a * 0.6 + b * 0.4;
+  // One shared calm-water field (§5). Three non-parallel waves at incommensurate
+  // freqs (lacunarity 1.9, not 2.0 → no repeat beat), bent by one cheap vnoise warp
+  // + derivative drag. band: 0 far(glassy)..1 near(finer). Fills grad (analytic slope,
+  // drives displacement); returns crest height ~[0,1] for the glints.
+  float waterField(vec2 uv, float t, float band, out vec2 grad) {
+    vec2 p = vec2(uv.x, uv.y * 3.0);                 // stretch y → crests run horizontal
+    // proper vec2 domain warp (independent x/y offsets) — breaks the directional grid → random
+    vec2 warp = vec2(vnoise2(p * 1.6 + vec2(0.0, t * 0.02)),
+                     vnoise2(p * 1.6 + vec2(5.2, t * 0.025))) - 0.5;
+    p += warp * 0.55;
+    float freq = 5.0 + 7.0 * band;                   // perspective: far glassy, near finer
+    float amp = 1.0;
+    const vec2 D0 = vec2(0.15, 0.99), D1 = vec2(0.55, 0.84), D2 = vec2(-0.40, 0.92);
+    const float DRAG = 0.24;                          // derivative warp; >0.28 = oily marble
+    float sum = 0.0, wsum = 0.0; grad = vec2(0.0); vec2 r;
+    r = wavedx(p, D0, freq,  t * 0.62); p += D0 * r.y * DRAG; sum += r.x*amp; grad += D0*r.y*amp; wsum += amp; amp *= 0.55; freq *= 1.9;
+    r = wavedx(p, D1, freq, -t * 0.78); p += D1 * r.y * DRAG; sum += r.x*amp; grad += D1*r.y*amp; wsum += amp; amp *= 0.55; freq *= 1.9;
+    r = wavedx(p, D2, freq,  t * 1.00);                       sum += r.x*amp; grad += D2*r.y*amp; wsum += amp;
+    return sum / wsum;
   }
 
   void main() {
@@ -149,11 +161,14 @@
     vec2 uv = (fragTL - uPlateOrigin) / uPlateSize;
     vec3 mask = texture(uMask, uv).rgb;   // hand-painted region mask (§3): R water, G dock, B flame
 
-    // --- water: displacement of the baked reflection (§5) ---
+    // --- water: one shared directional wave field → displacement + glints (§5) ---
     float band = clamp((uv.y - uHorizon) / (uDock - uHorizon), 0.0, 1.0);
-    float att = 0.5 + 0.5 * band;                // floor so mid/far water still moves (was pow→~0 mid)
-    float windAmp = 0.9 + 0.8 * uWind;           // never fully still; gusts intensify
-    vec2 disp = waterDisp(uv, uTime) * att * mask.r * windAmp;
+    float att = 0.5 + 0.5 * band;                // floor so mid/far water still moves
+    float windAmp = 0.9 + 0.8 * uWind;           // wind = MOTION only, never glint brightness
+    vec2 grad;
+    float h = waterField(uv, uTime, band, grad); // exp(sin) waves: sharp thin crests, non-uniform
+    // vertical-dominant displacement from the field's own slope (motion concentrates at crests)
+    vec2 disp = vec2(2.0 * grad.x / 3840.0, 7.0 * grad.y / 2143.0) * att * mask.r * windAmp;
 
     // --- tree rustle: horizontal sway of the dark treeline, wind-driven MOTION (§6.5) ---
     // Procedural region (painted mask2.R later): treeline band × darkness gate, water excluded.
@@ -171,16 +186,21 @@
     if (uv.y > uHorizon) suv.y = max(suv.y, uHorizon + 0.002); // water only: never sample shore up
     vec3 col = texture(uPhoto, clamp(suv, 0.0, 1.0)).rgb;
 
-    // --- ripple glints: moving light crests + shadow troughs — the "alive" signal (§5) ---
-    float w = waveH(uv, uTime);
-    float crest  = smoothstep(0.56, 0.82, w);    // bright thin crests catch the afterglow
-    float trough = smoothstep(0.42, 0.16, w);    // troughs fall into shadow
-    float rGate  = mask.r * att;                 // steady: gusts must NOT pulse glint brightness
-                                                 // (reads as synced to the flame). Wind drives wave
-                                                 // MOTION via displacement, not glint brightness.
+    // --- ripple glints from the SAME field: narrow squared window + noise breakup =
+    //     sparse sharp sparkle, not soft blobs (§5) ---
+    float crest = smoothstep(0.72, 0.98, h);
+    crest *= crest;                              // sharpen: thin sparkle, not a wide ellipse
+    crest *= smoothstep(0.45, 0.85, vnoise2(uv * vec2(55.0, 85.0) + uTime * 0.28)); // fragment ridge → points
+    // glitter path: glints ride the REFLECTED LIGHT (bright afterglow band), not the dark water;
+    // and favor crests tilting toward the sky — a directional glitter, not an even scatter.
+    float lightGate = smoothstep(0.05, 0.28, dot(col, vec3(0.299, 0.587, 0.114)));
+    float facing = mix(0.55, 1.0, smoothstep(0.0, 0.5, -grad.y));
+    crest *= lightGate * facing;
+    float trough = smoothstep(0.30, 0.05, h);
+    float rGate  = mask.r * att;                 // steady: gusts drive MOTION, never glint brightness
     vec3 ripTint = mix(COOL, WARM, 0.45);        // pale dusk afterglow, cool-warm
-    col += ripTint * crest * 0.13 * rGate;
-    col -= COOL   * trough * 0.06 * rGate;
+    col += ripTint * crest * 0.13 * rGate;       // gain up a touch — the gates cut some intensity
+    col -= COOL   * trough * 0.05 * rGate;
 
     // --- flame light: breathe the already-baked glow, coherently (§4b) ---
     col *= mix(1.0, uFlame, mask.b * 0.9);       // flame core tracks the signal

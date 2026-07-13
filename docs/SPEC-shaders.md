@@ -286,6 +286,26 @@ holds). Recorded so this doc doesn't mislead:
 - Debug harness left in (`?dbg=1` raw / `2` mask / `3` att, `?shadertest` cover
   check) — strip when the spike promotes to the default path.
 
+### Shipped v2 (2026-07-13) — water reworked after "not real enough" (research-driven)
+
+The value-noise displacement + crest/trough glints were replaced wholesale (research
+sweep: `exp(sin)` directional waves + domain warp). This is the current water.
+
+- **One shared directional wave field** (`waterField`): 3 non-parallel `wavedx`
+  (`exp(sin(x)-1)`, afl_ext/Alekseev) at incommensurate freqs (**lacunarity 1.9**,
+  not 2.0 → no repeat beat), bent by a **vec2 domain warp** (independent x/y — the
+  real grid-breaker) + derivative drag (`DRAG 0.24`). Fills an analytic `grad`.
+- **Displacement from `grad`** (motion concentrates at crests, troughs stay glassy),
+  vertical-dominant (`dyPx 7`), perspective freq `5+7·band`, gain 0.55, wave speeds
+  slowed ~0.7×.
+- **Glints** = narrow squared window `smoothstep(0.72,0.98,h)²` × high-freq breakup
+  noise → sparse sharp points (fixes "glints too large"), **gated to a glitter path**:
+  `lightGate = smoothstep(0.05,0.28, luma(reflection))` so glints ride the bright
+  afterglow, not dark water, × a facet-facing gate `mix(0.55,1,smoothstep(0,0.5,-grad.y))`.
+- Cheaper than v1 (~4 vnoise2-equiv vs 5), same 1 water fetch. Full plan +
+  parameter ranges: research output `wo6xde8iu` / journal. Watch-items: facing-gate
+  sign (`-grad.y` vs `grad.y`), far-water staying glassy, `DRAG>0.28` = oily marble.
+
 ## 6. Shoreline lanterns (shipped — spike v1)
 
 Uniform `vec2[]` array, evaluated analytically. `MAX_LAMPS` compile-time bound
