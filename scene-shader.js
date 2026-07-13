@@ -2,8 +2,8 @@
 //
 // Implements docs/SPEC-shaders.md: cover-crop transform (§2), wind→flame/water
 // coherence (§4), water displacement + ambient sky-glint (§5), disposable-canvas
-// lifecycle (§7), mount/coexistence swap (§8). Shoreline lanterns (§6) and tree
-// rustle (§6.5) are NOT built here — queued polish.
+// lifecycle (§7), mount/coexistence swap (§8), shoreline lanterns (§6), and tree
+// rustle (§6.5). Wind couples to water + tree MOTION (never glint brightness).
 //
 // The region mask is PROCEDURAL (procMask in the shader) — a placeholder for em's
 // hand-painted PNG (§3). Swapping to the real texture is a one-line change: sample
@@ -24,6 +24,19 @@
   const FLAME = [0.73, 0.63];      // --flame-x / --flame-y (style.css)
   const HORIZON = 0.40, DOCK = 0.75;
   const DEBUG = (location.search.match(/[?&]dbg=(\d)/) || [])[1] | 0; // 0 off,1 raw,2 mask,3 att
+  const ALL_LAMPS = /[?&]lamps(?:&|=|$)/.test(location.search); // force every lantern lit (tuning)
+
+  const MAX_LAMPS = 4;             // must match FRAG #define
+  // Shoreline lantern positions in plate UV, on the treeline/shore (§6). Tiny distant points.
+  const LAMP_POS = [
+    [0.12, 0.389],   // left shore (up a teeny bit)
+    [0.52, 0.390],   // middle, up out of the water onto the treeline
+    [0.93, 0.395],   // right edge, down a bit to water level in the trees
+    [0.595, 0.392],  // companion, ~120px right of the middle lamp (not eyes)
+  ];
+  // seconds into the session each lamp winks on (order: left, middle, right, companion).
+  // Illumination sequence: right 11s → left 18s → middle 32s → companion 40s.
+  const LAMP_IGNITE = [18, 32, 11, 40];
 
   const scene = document.querySelector('.scene');
   const shimmer = document.querySelector('.shimmer');
@@ -77,15 +90,21 @@
   const FRAG = `#version 300 es
   precision highp float;           // §7: iOS clamps to lowp → banded dusk gradients
   precision highp sampler2D;
+  #define MAX_LAMPS 4              // must match JS MAX_LAMPS
   uniform vec2  uResolution;       // drawing-buffer px
   uniform vec2  uPlateOrigin;      // §2
   uniform vec2  uPlateSize;
   uniform float uTime;
   uniform float uFlame, uHalo, uCast;   // flame LIGHT echoes (§4b)
   uniform float uWind;                  // wind envelope → water motion (§4c)
+  uniform float uTreeWind;              // low-passed wind → tree rustle (§6.5)
   uniform vec2  uFlamePos;
   uniform float uHorizon, uDock;
   uniform int   uDebug;
+  uniform int   uLampCount;                    // shoreline lanterns (§6)
+  uniform vec2  uLampPos[MAX_LAMPS];
+  uniform float uLampIgnite[MAX_LAMPS];
+  uniform float uLampFlicker[MAX_LAMPS];
   uniform sampler2D uPhoto;
   out vec4 outColor;
 
@@ -145,7 +164,20 @@
     float att = 0.5 + 0.5 * band;                // floor so mid/far water still moves (was pow→~0 mid)
     float windAmp = 0.9 + 0.8 * uWind;           // never fully still; gusts intensify
     vec2 disp = waterDisp(uv, uTime) * att * mask.r * windAmp;
+
+    // --- tree rustle: horizontal sway of the dark treeline, wind-driven MOTION (§6.5) ---
+    // Procedural region (painted mask2.R later): treeline band × darkness gate, water excluded.
+    float treeBand = smoothstep(0.28, 0.31, uv.y) * (1.0 - smoothstep(0.40, 0.43, uv.y));
+    float treeDx = 0.0;
+    if (treeBand > 0.0) {                                // gate the tap + noise: skip sky/dock/water (§7)
+      float luma = dot(texture(uPhoto, uv).rgb, vec3(0.299, 0.587, 0.114));
+      float treeMask = treeBand * (1.0 - smoothstep(0.06, 0.22, luma)) * (1.0 - mask.r); // dark trees, not water
+      treeDx = (vnoise2(vec2(uv.x * 7.0, uv.y * 3.0) + vec2(uTime * 0.18, 0.0)) - 0.5)
+             * (5.0 + 6.0 * uTreeWind) * treeMask / 3840.0;  // constant floor + wind; out-of-phase clumps
+    }
+
     vec2 suv = uv + disp;
+    suv.x += treeDx;
     if (uv.y > uHorizon) suv.y = max(suv.y, uHorizon + 0.002); // water only: never sample shore up
     vec3 col = texture(uPhoto, clamp(suv, 0.0, 1.0)).rgb;
 
@@ -164,6 +196,31 @@
     col *= mix(1.0, uFlame, mask.b * 0.9);       // flame core tracks the signal
     float castFall = smoothstep(0.55, 0.0, abs(uv.x - uFlamePos.x)); // strongest near lantern
     col += WARM * (mask.b * uHalo * 0.10 + mask.g * uCast * castFall * 0.08);
+
+    // --- shoreline lanterns: analytic point glows + reflection streaks (§6) ---
+    for (int i = 0; i < MAX_LAMPS; i++) {
+      if (i >= uLampCount) break;
+      vec2 P = uLampPos[i];
+      if (abs(uv.x - P.x) > 0.022) continue;                    // per-lamp x-reject (cheap gate)
+      float age = uTime - uLampIgnite[i];
+      if (age < 0.0) continue;                                  // hasn't lit yet this session
+      float lamp = smoothstep(0.0, 1.6, age) * uLampFlicker[i]; // warm-up ramp × per-lamp flicker
+      float d = length((uv - P) * vec2(1.0, 1.0 / 1.79188));    // aspect-correct distance
+      // a distant point light: a tiny dot + a soft feathered halo (exp falloff, no defined edge)
+      float glow = smoothstep(0.004, 0.0, d) + 0.14 * exp(-d / 0.005);
+      col += WARM * glow * lamp * 0.5;
+      float depth = uv.y - P.y;                                 // small reflection streak into the water
+      if (depth > 0.0 && depth < 0.09) {
+        float waver = disp.x * 2.0
+                    + (vnoise2(vec2(P.x * 40.0 + 5.0, uv.y * 30.0 - uTime * 0.6)) - 0.5) * 0.006;
+        float dxr = (uv.x - P.x) + waver;
+        float width = 0.0013 + depth * 0.02;                    // narrow, slight widen
+        float body = exp(-depth / 0.030) * exp(-(dxr * dxr) / (width * width));
+        float g = vnoise2(vec2(P.x * 12.0, uv.y * 110.0 - uTime * 1.6 + float(i)));
+        float glint = mix(0.3, 1.0, smoothstep(0.35, 0.75, g));
+        col += WARM * body * glint * lamp * mask.r * 0.3;       // subtle
+      }
+    }
 
     outColor = vec4(col, 1.0);
     if (uDebug == 1) outColor = vec4(texture(uPhoto, clamp(uv,0.0,1.0)).rgb, 1.0);   // raw photo
@@ -193,13 +250,27 @@
 
   const U = {};
   for (const n of ['uResolution', 'uPlateOrigin', 'uPlateSize', 'uTime',
-    'uFlame', 'uHalo', 'uCast', 'uWind', 'uFlamePos', 'uHorizon', 'uDock', 'uDebug', 'uPhoto']) {
+    'uFlame', 'uHalo', 'uCast', 'uWind', 'uTreeWind', 'uFlamePos', 'uHorizon', 'uDock', 'uDebug',
+    'uLampCount', 'uLampPos', 'uLampIgnite', 'uLampFlicker', 'uPhoto']) {
     U[n] = gl.getUniformLocation(prog, n);
   }
   gl.uniform2f(U.uFlamePos, FLAME[0], FLAME[1]);
   gl.uniform1f(U.uHorizon, HORIZON);
   gl.uniform1f(U.uDock, DOCK);
   gl.uniform1i(U.uDebug, DEBUG);
+
+  // ---- shoreline lantern static uniforms (§6): positions + per-session ignition ----
+  const lampPos = new Float32Array(MAX_LAMPS * 2);
+  const lampIgnite = new Float32Array(MAX_LAMPS);
+  const lampFlickerArr = new Float32Array(MAX_LAMPS);
+  for (let i = 0; i < MAX_LAMPS; i++) {
+    lampPos[i * 2] = LAMP_POS[i][0];
+    lampPos[i * 2 + 1] = LAMP_POS[i][1];
+    lampIgnite[i] = ALL_LAMPS ? -5 : LAMP_IGNITE[i]; // deterministic wink-on times (?lamps forces all lit)
+  }
+  gl.uniform1i(U.uLampCount, MAX_LAMPS);
+  gl.uniform2fv(U.uLampPos, lampPos);
+  gl.uniform1fv(U.uLampIgnite, lampIgnite);
 
   // ---- photo texture: display-matched (§3) ----
   const tex = gl.createTexture();
@@ -270,8 +341,8 @@
     const gutter = wind * (0.22 + 0.15 * Math.max(0, -vnoise1(t * 6 + 3))); // gusts gut it deeper
     return s * (1 - gutter);
   }
-  // one-pole low-pass state for halo/cast echoes
-  let halo = 1, cast = 1;
+  // one-pole low-pass state for halo/cast echoes + tree-wind inertia
+  let halo = 1, cast = 1, treeWind = 0.3;
 
   // ---- render loop with paused-accumulator clock (§7) ----
   let animTime = 0, lastMs = 0, raf = 0, running = false, firstFrame = true;
@@ -286,12 +357,17 @@
     const flame = flameSignal(animTime, wind);
     halo += (flame - halo) * Math.min(1, dt / 0.030);   // τ≈30ms
     cast += (flame - cast) * Math.min(1, dt / 0.080);   // τ≈80ms
+    treeWind += (wind - treeWind) * Math.min(1, dt / 0.35); // τ≈350ms: trees lean & settle
+    for (let i = 0; i < MAX_LAMPS; i++)                 // per-lamp flicker, decorrelated phase
+      lampFlickerArr[i] = 0.82 + 0.18 * (0.5 + 0.5 * vnoise1(animTime * 1.4 + i * 37.3));
 
     gl.uniform1f(U.uTime, animTime);
     gl.uniform1f(U.uFlame, flame);
     gl.uniform1f(U.uHalo, halo);
     gl.uniform1f(U.uCast, cast);
     gl.uniform1f(U.uWind, wind);
+    gl.uniform1f(U.uTreeWind, treeWind);
+    gl.uniform1fv(U.uLampFlicker, lampFlickerArr);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
     if (firstFrame) {                 // §8: swap poster → canvas after first good frame

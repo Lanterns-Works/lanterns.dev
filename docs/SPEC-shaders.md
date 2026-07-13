@@ -286,7 +286,7 @@ holds). Recorded so this doc doesn't mislead:
 - Debug harness left in (`?dbg=1` raw / `2` mask / `3` att, `?shadertest` cover
   check) — strip when the spike promotes to the default path.
 
-## 6. Shoreline lanterns (queued — design in now)
+## 6. Shoreline lanterns (shipped — spike v1)
 
 Uniform `vec2[]` array, evaluated analytically. `MAX_LAMPS` compile-time bound
 (≈20) with a `uLampCount` guard; unroll (don't use a uniform loop bound — mobile
@@ -320,7 +320,25 @@ extinguish logic — the brief only asks them to wink *on* (YAGNI). Cost with th
 gates: effectively ~1–3 lamps of real work per in-band fragment — negligible next
 to the water FBM.
 
-## 6.5 Shoreline trees — wind rustle (queued; design in now)
+### Shipped in spike v1 (2026-07-13) — concretions from em's live tuning
+
+- **`MAX_LAMPS = 4`, hand-placed**, not a ~20 scattered field — a sparse deliberate
+  set in `LAMP_POS` (plate UV): left shore `(0.12,0.389)`, center treeline
+  `(0.52,0.390)`, right tall-trees at water level `(0.93,0.395)`, companion ~120px
+  right of center `(0.595,0.392)`. Nudged by eye against the plate.
+- **Deterministic ignition**, not random pre-lit: `LAMP_IGNITE = [18,32,11,40]`s
+  (right 11 → left 18 → middle 32 → companion 40), a composed sequence. `?lamps`
+  forces all lit for position tuning.
+- **Tiny distant points.** Glow = a ~0.004 core + a *feathered exp halo*
+  (`0.14·exp(-d/0.005)` — a smoothstep disc read as a defined ring), dim (×0.5),
+  casts ~no scene light ("just a little dot of light").
+- **Streak** = broken glitter path, not a laser: `exp(-depth/0.03)`, widens with
+  depth, wavers via `disp.x` + noise, dashed by a glint noise, gated `depth<0.09` +
+  `mask.r`, tight `abs(uv.x-P.x)<0.022` reject.
+- Per-lamp flicker `0.82+0.18·vnoise1(t·1.4 + i·37.3)` — gentle, decorrelated,
+  flattened so distant points don't strobe.
+
+## 6.5 Shoreline trees — wind rustle (shipped — spike v1)
 
 Queued feature (em, 2026-07-12), same "design-it-in not bolt-it-on" stance as the
 lanterns: the far-shore treeline should **rustle subtly in sync with the wind** that
@@ -350,6 +368,19 @@ upload config as the primary mask. Cheap (~256px, another brand asset under
 
 Same freeze-on-reduced-motion rule (`uWind`=0 → trees still). Ship after the core
 water+flame reads right; this is the atmospheric polish pass, not the spike gate.
+
+### Shipped in spike v1 (2026-07-13)
+
+Built with a **procedural region, no painted mask2** — and it works, so the second
+PNG is deferred (paint one only if live viewing shows the rustle catching a non-tree
+dark region or bleeding at an edge). Region = treeline band
+`smoothstep(0.28,0.31,v)·(1-smoothstep(0.40,0.43,v))` × a **darkness gate** (luma <
+~0.22 from one uPhoto tap) × `(1-mask.r)` (exclude water). Horizontal sway
+`(vnoise2(uv·(7,3)+t·0.18)-0.5) · (5.0 + 6.0·uTreeWind) / 3840` — a **constant floor
++ wind** (em: "constant subtle movement that increases when wind blows").
+`uTreeWind` = JS one-pole low-pass of the wind envelope (τ≈350ms) for lean-and-
+settle. Luma tap + noise guarded behind `if (treeBand > 0.0)` so sky/dock/water skip
+them (review fix). Couples to wind as MOTION only, never brightness (§4c).
 
 ## 7. iOS / perf / lifecycle
 
