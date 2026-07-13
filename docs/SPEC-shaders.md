@@ -306,6 +306,30 @@ sweep: `exp(sin)` directional waves + domain warp). This is the current water.
   parameter ranges: research output `wo6xde8iu` / journal. Watch-items: facing-gate
   sign (`-grad.y` vs `grad.y`), far-water staying glassy, `DRAG>0.28` = oily marble.
 
+### Shipped v3 (2026-07-13) — 2nd warp octave + water gated to `mask.r`
+
+Water still read "a touch uniform" (em) → took the v2 note's own next-lever: a **second
+IQ-recursive domain-warp octave**. The finer octave reads the already-warped domain and
+breaks the residual grid in mid/far water. Costs **+2 `vnoise2` taps** (warp is now 4
+taps; a water fragment ≈ 5 value-noise + 3 `wavedx`), so the earlier "~4 vnoise2 vs 5"
+line above no longer holds — the field is heavier than v1, not cheaper.
+
+- **Warp:** `w1 = vnoise2-pair(p·1.6)`, `pw = p + w1·0.55`, `w2 = vnoise2-pair(pw·3.9)`,
+  `p = pw + w2·0.22`. Lacunarity 1.6→3.9 (~2.4×, incommensurate). `w2` amp 0.22 is the
+  only remaining perf/eye lever — drop it if far water reads oily or the iPhone gate ramps.
+- **§7 early-out added (review fix).** `waterField` + the glint block are now both wrapped
+  in `if (mask.r > 0.0)` — sky/dock/tree fragments (60–70% of the buffer) were running the
+  whole field and discarding it via `mask.r`. Behavior-preserving (those terms were already
+  ×`mask.r`=0); it *removes* discarded work and more than pays back the +2 taps. This is the
+  §7-mandated gate that was missing.
+- **Tree rustle response bumped** (§6.5): sway `(5.0 + 6.0·uTreeWind)` → `(5.0 + 13.0·
+  uTreeWind)` — same 5px calm floor, ~2× the gust-driven sway. Pure amplitude, no perf cost.
+  Em's-eye knob. Watch-item: no offset clamp to the feather width (unlike water §5), so if
+  the bigger sway smears a bright neighbor (a lit shoreline lamp sits in the tree band),
+  clamp `treeDx` (~0.0015 UV).
+- Verified: compiles, renders identically after gating, fallback intact. The uniformity/
+  tree-response *look* is still an em's-eye call on the live scene (motion, not a still).
+
 ## 6. Shoreline lanterns (shipped — spike v1)
 
 Uniform `vec2[]` array, evaluated analytically. `MAX_LAMPS` compile-time bound

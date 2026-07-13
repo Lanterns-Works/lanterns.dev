@@ -27,8 +27,9 @@ shows. Nothing was deleted; nobody gets a broken page.
   mask can be re-edited. `mask-ref.png` is regenerable and gitignored
   (`sips -Z 1024 assets/lanterns-background-layer.jpg --out mask-ref.png`).
 - **`docs/SPEC-shaders.md`** — the living spec and the source of truth for detail.
-  Read the "Shipped v1/v2" notes: §5 v2 (current water), §6 (lanterns), §6.5 (tree
-  rustle), and the LAUNCHED note at the end of §10. Every tuned number is there.
+  Read the "Shipped v1/v2/v3" notes: §5 v3 (current water — 2-octave warp, gated to
+  `mask.r`), §6 (lanterns), §6.5 (tree rustle), and the LAUNCHED note at the end of
+  §10. Every tuned number is there.
 - **`docs/how-the-scene-works.md`** — non-technical explainer for stakeholders.
 
 ## Open / possible next work
@@ -37,6 +38,9 @@ shows. Nothing was deleted; nobody gets a broken page.
    on the live URL, but the SPEC's formal gate — *60fps sustained through a 3-minute
    sit on a current iPhone, no thermal ramp, no pop at swap* — has **not** been run
    on a physical device. Cap is DPR 2.0; if it ramps, drop the GL buffer to 1.5×.
+   *Matters a touch more since v3:* the water field gained 2 `vnoise2` taps, though
+   it's now gated to the water region (`mask.r`) so non-water pays nothing. If it
+   ramps, the single knob is `w2`'s `0.22` amplitude (SPEC §5 v3).
 2. **Debug harness stays** (em, 2026-07-13) — *not* stripped. It's disabled by
    default (nothing renders without the query param) and zero-cost when off, so it
    just lives in the code until we need it again: `?dbg=1` raw / `2` mask / `3` att,
@@ -44,9 +48,9 @@ shows. Nothing was deleted; nobody gets a broken page.
 3. **Facing-gate sign** (§5 v2 watch-item). The glint facet-facing gate uses
    `-grad.y`; if on close inspection glints sparkle on the "wrong" side of ripples,
    flip to `grad.y` (one character).
-4. **Water still a touch uniform?** Next lever is a second domain-warp octave (IQ
-   recursive warp); held off for perf headroom. Glint size / calmness knobs are
-   documented in SPEC §5 v2.
+4. **Water uniformity — SHIPPED (v3, 2026-07-13).** The second domain-warp octave (IQ
+   recursive warp) is in and em-approved; the field is also now gated to `mask.r`. See
+   SPEC §5 v3. Further levers if ever wanted: a 3rd warp octave, or `w2` amp for calm.
 5. **Tree mask.** Rustle uses a *procedural* treeline region (band × darkness gate)
    and it works. Only paint a `mask2.R` PNG if live viewing shows it catching a
    non-tree dark region or bleeding at an edge.

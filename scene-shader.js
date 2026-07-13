@@ -139,10 +139,18 @@
   // drives displacement); returns crest height ~[0,1] for the glints.
   float waterField(vec2 uv, float t, float band, out vec2 grad) {
     vec2 p = vec2(uv.x, uv.y * 3.0);                 // stretch y → crests run horizontal
-    // proper vec2 domain warp (independent x/y offsets) — breaks the directional grid → random
-    vec2 warp = vec2(vnoise2(p * 1.6 + vec2(0.0, t * 0.02)),
-                     vnoise2(p * 1.6 + vec2(5.2, t * 0.025))) - 0.5;
-    p += warp * 0.55;
+    // Two-octave vec2 domain warp (IQ recursive: the 2nd octave reads the already-warped
+    // domain, SPEC §5 v2 next-lever). Coarse octave sets the big meander; the finer,
+    // decorrelated octave breaks the residual uniformity a single warp left in mid/far water.
+    vec2 w1 = vec2(vnoise2(p * 1.6 + vec2(0.0, t * 0.02)),
+                   vnoise2(p * 1.6 + vec2(5.2, t * 0.025))) - 0.5;
+    vec2 pw = p + w1 * 0.55;                          // warp the domain...
+    vec2 w2 = vec2(vnoise2(pw * 3.9 + vec2(1.7, -t * 0.031)),
+                   vnoise2(pw * 3.9 + vec2(8.3,  t * 0.028))) - 0.5;
+    p = pw + w2 * 0.22;                               // ...then warp the warp (incommensurate freq)
+    // ponytail: +2 vnoise2 taps, but the whole field is now gated to water fragments
+    //           (mask.r>0.0 early-out in main), so non-water pays nothing. If the iPhone
+    //           gate still ramps, drop w2 amp (0.22) — that's the only remaining lever. §7.
     float freq = 5.0 + 7.0 * band;                   // perspective: far glassy, near finer
     float amp = 1.0;
     const vec2 D0 = vec2(0.15, 0.99), D1 = vec2(0.55, 0.84), D2 = vec2(-0.40, 0.92);
@@ -164,10 +172,17 @@
     float band = clamp((uv.y - uHorizon) / (uDock - uHorizon), 0.0, 1.0);
     float att = 0.5 + 0.5 * band;                // floor so mid/far water still moves
     float windAmp = 0.9 + 0.8 * uWind;           // wind = MOTION only, never glint brightness
-    vec2 grad;
-    float h = waterField(uv, uTime, band, grad); // exp(sin) waves: sharp thin crests, non-uniform
-    // vertical-dominant displacement from the field's own slope (motion concentrates at crests)
-    vec2 disp = vec2(2.0 * grad.x / 3840.0, 7.0 * grad.y / 2143.0) * att * mask.r * windAmp;
+    // §7 early-out: only water pays the wave field (sky/dock/tree fragments skip ~5 vnoise2 +
+    // 3 wavedx). mask.r==0 already zeroed disp + every glint term below, so this only removes
+    // discarded work — it changes no pixel. The mask's water region is contiguous, so the
+    // branch stays warp-coherent except at the shoreline feather.
+    vec2 grad = vec2(0.0), disp = vec2(0.0);
+    float h = 0.0;
+    if (mask.r > 0.0) {
+      h = waterField(uv, uTime, band, grad);     // exp(sin) waves: sharp thin crests, non-uniform
+      // vertical-dominant displacement from the field's own slope (motion concentrates at crests)
+      disp = vec2(2.0 * grad.x / 3840.0, 7.0 * grad.y / 2143.0) * att * mask.r * windAmp;
+    }
 
     // --- tree rustle: horizontal sway of the dark treeline, wind-driven MOTION (§6.5) ---
     // Procedural region (painted mask2.R later): treeline band × darkness gate, water excluded.
@@ -177,7 +192,7 @@
       float luma = dot(texture(uPhoto, uv).rgb, vec3(0.299, 0.587, 0.114));
       float treeMask = treeBand * (1.0 - smoothstep(0.06, 0.22, luma)) * (1.0 - mask.r); // dark trees, not water
       treeDx = (vnoise2(vec2(uv.x * 7.0, uv.y * 3.0) + vec2(uTime * 0.18, 0.0)) - 0.5)
-             * (5.0 + 6.0 * uTreeWind) * treeMask / 3840.0;  // constant floor + wind; out-of-phase clumps
+             * (5.0 + 13.0 * uTreeWind) * treeMask / 3840.0;  // floor 5px + stronger wind response (was 6·); em's-eye knob
     }
 
     vec2 suv = uv + disp;
@@ -186,20 +201,22 @@
     vec3 col = texture(uPhoto, clamp(suv, 0.0, 1.0)).rgb;
 
     // --- ripple glints from the SAME field: narrow squared window + noise breakup =
-    //     sparse sharp sparkle, not soft blobs (§5) ---
-    float crest = smoothstep(0.72, 0.98, h);
-    crest *= crest;                              // sharpen: thin sparkle, not a wide ellipse
-    crest *= smoothstep(0.45, 0.85, vnoise2(uv * vec2(55.0, 85.0) + uTime * 0.28)); // fragment ridge → points
-    // glitter path: glints ride the REFLECTED LIGHT (bright afterglow band), not the dark water;
-    // and favor crests tilting toward the sky — a directional glitter, not an even scatter.
-    float lightGate = smoothstep(0.05, 0.28, dot(col, vec3(0.299, 0.587, 0.114)));
-    float facing = mix(0.55, 1.0, smoothstep(0.0, 0.5, -grad.y));
-    crest *= lightGate * facing;
-    float trough = smoothstep(0.30, 0.05, h);
-    float rGate  = mask.r * att;                 // steady: gusts drive MOTION, never glint brightness
-    vec3 ripTint = mix(COOL, WARM, 0.45);        // pale dusk afterglow, cool-warm
-    col += ripTint * crest * 0.13 * rGate;       // gain up a touch — the gates cut some intensity
-    col -= COOL   * trough * 0.05 * rGate;
+    //     sparse sharp sparkle, not soft blobs (§5) --- (same mask.r gate: only water sparkles)
+    if (mask.r > 0.0) {
+      float crest = smoothstep(0.72, 0.98, h);
+      crest *= crest;                            // sharpen: thin sparkle, not a wide ellipse
+      crest *= smoothstep(0.45, 0.85, vnoise2(uv * vec2(55.0, 85.0) + uTime * 0.28)); // fragment ridge → points
+      // glitter path: glints ride the REFLECTED LIGHT (bright afterglow band), not the dark water;
+      // and favor crests tilting toward the sky — a directional glitter, not an even scatter.
+      float lightGate = smoothstep(0.05, 0.28, dot(col, vec3(0.299, 0.587, 0.114)));
+      float facing = mix(0.55, 1.0, smoothstep(0.0, 0.5, -grad.y));
+      crest *= lightGate * facing;
+      float trough = smoothstep(0.30, 0.05, h);
+      float rGate  = mask.r * att;               // steady: gusts drive MOTION, never glint brightness
+      vec3 ripTint = mix(COOL, WARM, 0.45);      // pale dusk afterglow, cool-warm
+      col += ripTint * crest * 0.13 * rGate;     // gain up a touch — the gates cut some intensity
+      col -= COOL   * trough * 0.05 * rGate;
+    }
 
     // --- flame light: breathe the already-baked glow, coherently (§4b) ---
     col *= mix(1.0, uFlame, mask.b * 0.9);       // flame core tracks the signal
