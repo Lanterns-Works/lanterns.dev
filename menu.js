@@ -55,7 +55,9 @@ const navOpen = () => document.body.classList.contains('nav-open');
 // --- popup show / hide, with enter + exit transitions ---
 function showPopup() {
   clearTimeout(hideTimer);
-  const first = popup.hidden;
+  // key off the visible state, not the lagging `hidden` attr: reopening within the
+  // 360ms close window (hideTimer cancelled) must still count as a fresh open.
+  const first = !isOpen();
   if (first) {
     lastFocus = document.activeElement;
     popup.hidden = false;
@@ -212,18 +214,19 @@ const readTheme = () => {
   const t = localStorage.getItem(THEME_KEY);
   return THEMES.includes(t) ? t : 'auto';
 };
-const surfaceIsLight = () => {
-  const t = readTheme();
-  return t === 'light' || (t === 'auto' && !darkMql.matches);
-};
+// applyTheme resolves AUTO to a concrete data-theme, so "is the surface light?" is
+// just reading it back.
+const surfaceIsLight = () => popup.getAttribute('data-theme') === 'light';
 // the toggle sits over the popup on desktop → flip to the black icon on a light surface
 function updateAmpSurface() {
   amp.classList.toggle('on-light', isOpen() && surfaceIsLight());
 }
 function applyTheme(t) {
-  if (t === 'auto') popup.removeAttribute('data-theme');
-  else popup.setAttribute('data-theme', t);
-  themeBtn.innerHTML = THEME_FACE[t];
+  // resolve AUTO to a concrete light/dark so the CSS carries the dark palette once,
+  // not in a duplicated prefers-color-scheme block.
+  const dark = t === 'dark' || (t === 'auto' && darkMql.matches);
+  popup.setAttribute('data-theme', dark ? 'dark' : 'light');
+  themeBtn.innerHTML = THEME_FACE[t]; // face + label still reflect the raw AUTO/light/dark choice
   themeBtn.setAttribute('aria-label', THEME_LABEL[t]);
   updateAmpSurface();
 }
@@ -235,7 +238,8 @@ themeBtn.addEventListener('click', (e) => {
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
 });
-darkMql.addEventListener('change', updateAmpSurface);
+// keep AUTO tracking the OS live — re-resolve data-theme (and the amp surface)
+darkMql.addEventListener('change', () => applyTheme(readTheme()));
 
 // --- go: reveal chrome, restore theme, honor any deep link on load ---
 amp.hidden = false;

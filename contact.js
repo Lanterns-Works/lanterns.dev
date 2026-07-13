@@ -24,6 +24,11 @@ function loadSdk() {
       const s = document.createElement('script');
       s.src = SDK_SRC;
       s.onload = () => {
+        if (!window.emailjs) {
+          sdkPromise = null; // loaded but didn't define the global — let a retry re-attempt
+          reject(new Error('EmailJS SDK missing after load'));
+          return;
+        }
         window.emailjs.init({ publicKey: EMAILJS.publicKey });
         resolve(window.emailjs);
       };

@@ -121,15 +121,8 @@ body.popup-open header { opacity: 0; pointer-events: none; }
   bottom: 0;
   width: min(680px, 52vw);
 }
-@media (prefers-color-scheme: dark) {
-  .popup:not([data-theme='light']) {
-    --bg: #171010;
-    --fg: #e7e5de;
-    --muted: rgba(231, 229, 222, 0.55);
-    --accent: #e0a24e;
-    --edge: rgba(231, 229, 222, 0.14);
-  }
-}
+/* dark palette — applyTheme() resolves AUTO to a concrete data-theme, so this is
+   the single source (base .popup above is the light palette). */
 .popup[data-theme='dark'] {
   --bg: #171010;
   --fg: #e7e5de;
@@ -163,10 +156,6 @@ body.popup-open .popup-logo { opacity: 1; }
 }
 .logo-white { opacity: 0; }
 .logo-black { opacity: 1; }
-@media (prefers-color-scheme: dark) {
-  .popup:not([data-theme='light']) .logo-black { opacity: 0; }
-  .popup:not([data-theme='light']) .logo-white { opacity: 1; }
-}
 .popup[data-theme='dark'] .logo-black { opacity: 0; }
 .popup[data-theme='dark'] .logo-white { opacity: 1; }
 
