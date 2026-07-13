@@ -479,6 +479,13 @@ sampler2D uMask2       // treeline — queued, §6.5 only
    ramp, no pop at swap — and em's eye says the water reads as water and the light
    moves together. Then replace the `.shimmer`/`.glow` path and drop `?shader`.
 
+**LAUNCHED (2026-07-13):** the `?shader` gate was removed — the shader is now the
+default at the root domain. The CSS `.shimmer`/`.glow` scene is **retained, not
+deleted**: it's the fallback/poster for reduced-motion, save-data, no-WebGL2, and
+context-loss (the module bows out and the static scene shows). Debug affordances
+(`?dbg`, `?lamps`, `?shadertest`) kept in — zero-cost when off, useful for tuning;
+strip in a follow-up if a pristine public build is wanted.
+
 ## 11. What only the spike can settle (calibrate on the real iPhone)
 
 - Exact `v_h` and `v_dock` measured off the plate; the treeline dips center / rises

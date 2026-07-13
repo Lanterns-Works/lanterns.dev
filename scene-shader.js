@@ -1,20 +1,19 @@
-// lanterns.dev — WebGL2 lantern scene (spike, behind ?shader)
+// lanterns.dev — WebGL2 lantern scene (the default at the root domain)
 //
 // Implements docs/SPEC-shaders.md: cover-crop transform (§2), wind→flame/water
-// coherence (§4), water displacement + ambient sky-glint (§5), disposable-canvas
-// lifecycle (§7), mount/coexistence swap (§8), shoreline lanterns (§6), and tree
-// rustle (§6.5). Wind couples to water + tree MOTION (never glint brightness).
+// coherence (§4), directional-wave water + light-gated glints (§5 v2), disposable-
+// canvas lifecycle (§7), mount/coexistence swap (§8), shoreline lanterns (§6), and
+// tree rustle (§6.5). Wind couples to water + tree MOTION (never glint brightness).
 //
-// The region mask is PROCEDURAL (procMask in the shader) — a placeholder for em's
-// hand-painted PNG (§3). Swapping to the real texture is a one-line change: sample
-// uMask instead of procMask(uv). No effect is flame-coupled on the water: there is
-// no lantern reflection (§0.3); water couples to wind only.
+// Region control is the hand-painted mask assets/lanterns-mask.png (§3): R water,
+// G dock-cast, B flame/glass. On reduced-motion / save-data / no-WebGL2 / context
+// loss the module bows out and the static CSS scene (the poster) shows instead.
+// Debug affordances: ?dbg=1 raw / 2 mask / 3 att, ?lamps (all lit), ?shadertest.
 
 (() => {
   'use strict';
 
-  // Gate: only behind ?shader, never over reduced-motion / save-data (keep poster).
-  if (!/[?&]shader(?:&|=|$)/.test(location.search)) return;
+  // Runs by default; fall back to the static CSS poster on reduced-motion / save-data.
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (navigator.connection && navigator.connection.saveData) return;
 
