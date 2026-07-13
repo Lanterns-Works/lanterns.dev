@@ -2,7 +2,35 @@
 
 *Design approved by em 2026-07-13. Inspo: **earendil.com**. Content is placeholder-only
 until em provides real copy. This is the build plan; the shader work is separate
-(`SPEC-shaders.md`). We paused here after approval to decide build-this-session-or-next.*
+(`SPEC-shaders.md`). Approved and paused here — **pages build starts next session.***
+
+## Next session — start here
+
+**Where we are:** the shader scene is shipped and live; the water v3 (2-octave warp,
+gated to `mask.r`) + stronger tree wind are committed (`8ee20b1`) and em-approved. The
+pages below are **designed and approved but NOT built yet.**
+
+**Do next:** build the pages, following the **Build order** at the bottom of this doc —
+start at step 1 (popup shell + `&`/menu + hash routing). It's feature work → run it
+through the build loop (brainstorm is done; go to a written implementation plan, then
+build). Build against **placeholder content**; em supplies real copy later.
+
+**Do NOT build the contact form yet** — it's deferred until em picks the email-sending
+dependency. Ship Contact as a placeholder page (§6).
+
+**Run it:** no build step. `python3 -m http.server --directory <repo>` then open
+`localhost:8000`; edit and hard-reload (Cmd+Shift+R busts the script cache).
+
+**Carry-forward rules:**
+- Commit as `em lorien <em@lanterns.dev>` (automatic via the git conditional-include for
+  the Lanterns folder). `main` has branch protection — commit locally; PR/admin-bypass to
+  push. No `Co-Authored-By` trailers.
+- Front-end stays **zero-dependency, no build**. A dependency is allowed *only* when a
+  plan needs it — the eventual contact form (server-side email dep) is the one
+  anticipated case; the browser bundle stays hand-written.
+- **The gate is em's eye** — judge on desktop *and* the portrait-mobile crop, not a
+  checklist. Scene chrome (`#160e0e`/`#e7e5de`) is fixed; light/dark affects only popups.
+- Cross-refs: shader → `SPEC-shaders.md` / `HANDOFF-shaders.md`; pages → this doc.
 
 ## Decisions (locked)
 
