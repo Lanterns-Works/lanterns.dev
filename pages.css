@@ -105,7 +105,7 @@ body.popup-open header { opacity: 0; pointer-events: none; }
   top: 0;
   left: 0;
   bottom: 0;
-  width: min(740px, 54vw);
+  width: min(764px, 56vw); /* = 38em body + 20px scrollbar gutter + panel padding */
 }
 /* dark palette — applyTheme() resolves AUTO to a concrete data-theme, so this is
    the single source (base .popup above is the light palette). */
@@ -244,7 +244,8 @@ body.popup-open .popup-panel { opacity: 0.8; transform: none; }
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  max-width: 38em; /* ~75 characters of Georgia */
+  padding-right: 20px; /* keep the (overlay) scrollbar off the line ends */
+  max-width: calc(38em + 20px); /* ~75 characters of Georgia, plus the gutter */
   font-size: clamp(15px, 1.8vmin, 17px);
   line-height: 1.7;
   outline: none;
@@ -377,7 +378,9 @@ body:not(.popup-open) .popup-lantern { opacity: 0; transition-duration: 0.34s; }
   footer { display: none; }                     /* copyright moves into the popup */
 
   .popup { top: 0; left: 0; right: 0; bottom: 0; width: auto; }
-  .popup-panel { padding-left: clamp(20px, 6vw, 40px); padding-right: clamp(20px, 6vw, 40px); }
+  /* right: the body's own gutter takes 12px of the panel padding, so line length holds */
+  .popup-panel { padding-left: clamp(20px, 6vw, 40px); padding-right: clamp(8px, calc(6vw - 12px), 28px); }
+  .popup-body { padding-right: 12px; max-width: none; }
   body.popup-open .popup-panel { opacity: 0.9; } /* more opaque on mobile for readability */
   .popup-controls { right: clamp(20px, 6vw, 40px); }
 

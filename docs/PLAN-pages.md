@@ -53,7 +53,7 @@ the "Speaking and collaboration" copy.
 ## September 2026 deltas (vs. the July design below)
 
 - **Nav:** `NAV` entries in `render.js` take an optional third element, an external href;
-  `menu.js` builds those as plain same-tab links with no `data-route`, so routing,
+  `menu.js` builds those as plain new-tab links (`target=_blank`, `rel=noopener`) with no `data-route`, so routing,
   active state, and the route allowlist ignore them.
 - **Routes:** `parseHash` returns `{ name }` only — no slug routes remain. News, posts,
   `renderNews`, and the Works/Join pages are deleted.

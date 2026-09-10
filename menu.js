@@ -30,7 +30,12 @@ for (const [name, label, href] of NAV) {
     const a = document.createElement('a');
     a.className = 'nav-item';
     a.textContent = label;
-    if (href) a.href = href; // external (essays): same tab, no route, never active
+    if (href) {
+      // external (essays): new tab, no route, never active
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener';
+    }
     else {
       a.href = `#${name}`;
       a.dataset.route = name;

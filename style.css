@@ -15,6 +15,7 @@ body {
   background: var(--black);
   color: var(--white);
   font-family: Georgia, 'Noto Serif', 'Times New Roman', Times, serif; /* Georgia where installed (Noto on Android/Linux); one face across site, essays, newsletter */
+  letter-spacing: 0.01em; /* a touch of air in Georgia; labels set their own tracking */
 }
 
 .scene {
