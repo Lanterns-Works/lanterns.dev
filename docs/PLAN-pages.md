@@ -7,19 +7,18 @@ is the July design as built — the September deltas are listed first.*
 
 ## Next session — start here
 
-**Where we are (2026-09-10):** the September page set is built on branch
-`september-pages` (PR pending em's eye). Five nav items — About · **Essays** (external,
-`https://essays.lanterns.dev/`) · Research · Resources · Contact — with em's September
-copy in `content/en.js`, Georgia replacing Nimbus Mono site-wide (font files deleted), the
-desktop popup widened a little for reading, and a static footer link to the essays
-site so crawlers see it without JS. Home stays empty (the three
-"Every being is a point of light" paragraphs open About). Works / Join / News and the
-placeholder posts are gone, not migrated. The contact form (EmailJS) stays and carries
-the "Speaking and collaboration" copy.
+**Where we are (2026-09-10):** the September page set is **live — PR #2 merged to `main`.**
+Five nav items — About · **Essays** (external, new tab, `https://essays.lanterns.dev/`, which
+Ghost now serves) · Research · Resources · Contact — with em's September copy in `content/en.js`,
+Georgia site-wide (Nimbus Mono and its files gone), a slightly wider desktop popup with a 30px
+scrollbar gutter, a static footer link and RSS `alternate` to the essays site. Home stays empty
+(About opens with "A self-actualized person is like a lantern in the dark"). Works / Join / News and the
+placeholder posts are gone. The contact form (EmailJS) stays and carries the "Speaking and
+collaboration" copy. PR review is the Claude GitHub app (`.github/workflows/`), proven on PR #2.
 
 **Do next:**
-1. em's eye on `september-pages` (PR #2) — desktop + portrait mobile; then merge. The essays
-   subdomain is live on Ghost (DNS done 2026-09-10) and `index.html` carries the RSS `alternate`.
+1. Essays theme: `../Ghost-edition-Lanterns` (a fork of Ghost's Edition) needs housekeeping and a
+   push to the org — list in `../plans/lanterns/essays-site.md`, Repo section.
 2. **Attribution:** About is written without a name. em wants the site attributed to
    **em lorien** with a short pseudonymous bio — needs em's words, then a paragraph in
    `content/en.js` `about`.
