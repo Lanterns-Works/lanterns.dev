@@ -35,8 +35,7 @@ export const pages = {
       and read, think, and write at the intersection of consciousness research, philosophy of mind, AI ethics
       and alignment, and human values.</p>
 
-      <p>lanterns is currently in development.  To be kept abreast of new essays, topical resources, and updates
-      to this site, subscribe to the newsletter.</p>
+      <p>lanterns is currently in development.  To be kept abreast of new essays, resources, and projects, <a href="https://essays.lanterns.dev/" target="_blank">subscribe to the newsletter.</a></p>
     `,
   },
 
