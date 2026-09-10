@@ -1,0 +1,145 @@
+# Automatic PR review by Claude — the review of record on this repo (no Macroscope here), so a run
+# that posts nothing is a failure even when it exits green. The marker step at the bottom is what
+# guarantees every PR gets a visible verdict.
+#
+# Auth: the org-level CLAUDE_CODE_OAUTH_TOKEN secret (Max subscription); its visibility must include
+# this repo. NEVER add anthropic_api_key — it overrides the OAuth token and bills at API rates.
+# NEVER switch this to pull_request_target — that would hand fork code the repo secrets.
+name: Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+# A new push supersedes the review in flight. cancel-in-progress is safe here only because the
+# marker step below is gated on !cancelled(), so a superseded run never posts a false "unreviewed".
+concurrency:
+  group: review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Public repo, so the fork guard is real: a fork PR gets no secrets under `pull_request`, and
+    # the run would fail confusingly instead of skipping. Drafts and bot PRs are not worth a review.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.login != 'claude[bot]' &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    # Wall-clock backstop on the subscription quota. GitHub's default job timeout is 6h.
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      # WRITE, not read: the review posts inline comments and the marker below posts a PR comment.
+      # `pull-requests: read` is why the 2026-09-10 run reviewed the diff and posted nothing.
+      pull-requests: write
+      issues: read
+      # Mints the Claude GitHub App installation token, so comments land as claude[bot].
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          # fetch-depth: 0, NOT 1 — the review skill diffs base...HEAD, and a depth-1 checkout has
+          # no base commit to diff against.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Install the current stable CLI and hand it to the action, so the action stays pinned to a
+      # SHA while the runtime tracks stable. Retried and bounded: a stalled download otherwise hangs
+      # the attempt forever, and the action's own single-retry install has thrown "native binary not
+      # found" in the fleet.
+      - name: Install Claude Code (latest stable, resilient)
+        run: |
+          set +e
+          for i in 1 2 3 4 5; do
+            timeout 180 bash -c 'curl -fsSL https://claude.ai/install.sh | bash'
+            [ -x "$HOME/.local/bin/claude" ] && break
+            echo "Claude Code install attempt $i failed; retrying in $((i * 3))s"
+            [ "$i" -lt 5 ] && sleep "$((i * 3))"
+          done
+          set -e
+          [ -x "$HOME/.local/bin/claude" ] || { echo "::error::Claude Code install failed after 5 attempts"; exit 1; }
+          "$HOME/.local/bin/claude" --version
+
+      - id: review
+        uses: anthropics/claude-code-action@19dda84776b3518d98b8798e591daee763049ed3 # v1.0.220
+        env:
+          # anthropics/claude-code-action#1499 (open through v1.0.220): the action stops reading the
+          # SDK stream at the FIRST result message, so a run that backgrounds review subagents and
+          # ends its turn to wait for them exits green with the work orphaned — that was the
+          # 2026-09-10 run stuck on "Background review agents analyzing the diff". Also set via
+          # settings.env below, which is the path the action documents.
+          CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1"
+        with:
+          path_to_claude_code_executable: /home/runner/.local/bin/claude
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Full transcript in the job log; the default prints a 7-field summary and drops the
+          # result text, which is what made the silent runs undiagnosable.
+          show_full_output: true
+          # attribution: no Co-Authored-By trailer, no "Generated with Claude Code" footer (house rule).
+          # env: the DOCUMENTED way to reach the Claude process — the action runs the SDK in an
+          # internal step whose own env: block shadows the caller's (its action.yml says so), so the
+          # step-level env above may never arrive. Both are set; this one is the one that counts.
+          settings: |
+            { "attribution": { "commit": "", "pr": "", "sessionUrl": false },
+              "env": { "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": "1" } }
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          plugins: "code-review@claude-code-plugins"
+          # --allowedTools IS REQUIRED and MUST BE COMPLETE. Two separate failure modes:
+          #   • The action only installs the inline-comment MCP server when the parsed allow-list
+          #     names mcp__github_inline_comment__* — otherwise the skill has nothing to post with
+          #     and the run ends "No buffered inline comments".
+          #   • Anything not on the list is DENIED (no human in CI to approve), so a half-list
+          #     starves the skill mid-review — that is the 2 and 18 permission denials of
+          #     2026-09-10. The list is generous on purpose; the guardrail is the token scope
+          #     (contents: read above), not this list.
+          claude_args: '--model opus --effort xhigh --allowedTools "mcp__github_inline_comment__create_inline_comment,Read,Glob,Grep,Bash,Task,TodoWrite"'
+          prompt: |
+            /code-review:code-review --comment
+
+            House review conventions — apply on top of the skill defaults:
+            - Threshold: surface every finding scoring above 40 (the skill defaults to flagging only the >=80) — be more inclusive than usual.
+            - Over-engineering is a finding: an abstraction with one implementation, a dependency for what a few lines would do, code kept "for later", a clever construct where a boring one works. The shortest working diff is the standard.
+            - Voice: first person, as one reviewer ("I noticed…", "I'd do X if I were you") — never "we", never a clipped linter tone; warm and collaborative.
+            - Specific and cited, always: every comment names the exact file and line and what is wrong — never a vague class of problems.
+            - Advise the fix; never offer to make, apply, or "dig into" it — it is the author's PR.
+            - Plain language, minimal jargon.
+            - If you post a summary comment, open with what is genuinely working well, then list the issues most-important first.
+            - No tool-attribution footer — no "🤖 Generated with Claude Code" line and no "react with 👍/👎" line.
+            - This is a static, no-build site: native ES modules, no bundler, no test suite. Review accordingly — correctness by reading, plus anything that would break GitHub Pages.
+            - You MAY dispatch parallel subagents (the Task tool) to review independent parts of the diff at once. Stay read-only: report findings, never attempt a write — the token is read-only on code, so edits cannot land anyway.
+
+      # The action writes the full SDK transcript to a temp file and never uploads it. run_attempt is
+      # load-bearing in the name: artifacts are immutable and a re-run shares the run id.
+      - name: Keep the execution transcript
+        if: ${{ always() && steps.review.outputs.execution_file != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: claude-review-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.review.outputs.execution_file }}
+          retention-days: 30
+          if-no-files-found: ignore
+
+      # OUTCOME-AWARE marker, and the reason this workflow can be trusted as the review of record: a
+      # green run with zero visible output is indistinguishable from the workflow never having run.
+      # !cancelled() so it also fires when the review ERRORED (when the truth that the PR is
+      # unreviewed matters most) but not when a newer push superseded this run.
+      - name: Post outcome-aware marker
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          OUTCOME: ${{ steps.review.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -o pipefail
+          if [ "$OUTCOME" != "success" ]; then
+            printf '🤖 Claude review — ⚠️ **this review did not complete.** It errored or hit a limit before finishing, so this PR is effectively **unreviewed** — please do not read the absence of comments as a clean bill of health. Run log: %s\n' "$RUN_URL" > marker.md
+          else
+            printf '🤖 Claude review — the review ran to completion; any findings are inline above.\n' > marker.md
+          fi
+          gh pr comment "$PR" --repo "$REPO" --body-file marker.md --edit-last --create-if-none \
+            || gh pr comment "$PR" --repo "$REPO" --body-file marker.md
