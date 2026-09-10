@@ -14,7 +14,7 @@ const popupNav = $('#popup-nav');
 const popup = $('#popup');
 const lantern = $('.popup-lantern');
 const mount = { title: $('#popup-title'), side: $('#popup-side'), body: $('#popup-body') };
-const routeNames = new Set(NAV.map(([n]) => n));
+const routeNames = new Set(NAV.filter(([, , href]) => !href).map(([n]) => n));
 const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isMobile = () => matchMedia('(max-width: 760px)').matches;
 const isOpen = () => document.body.classList.contains('popup-open');
@@ -25,13 +25,16 @@ let lanternTimer = null;
 let lanternDwell = null;
 
 // --- build the nav into BOTH the desktop strip and the in-popup (mobile) list ---
-for (const [name, label] of NAV) {
+for (const [name, label, href] of NAV) {
   for (const host of [nav, popupNav]) {
     const a = document.createElement('a');
     a.className = 'nav-item';
-    a.href = `#${name}`;
     a.textContent = label;
-    a.dataset.route = name;
+    if (href) a.href = href; // external (essays): same tab, no route, never active
+    else {
+      a.href = `#${name}`;
+      a.dataset.route = name;
+    }
     host.appendChild(a);
   }
 }
@@ -148,7 +151,7 @@ document.addEventListener('keydown', (e) => {
 // click outside the popup / nav / toggle closes
 document.addEventListener('click', (e) => {
   if (!isOpen() && !navOpen()) return;
-  if (e.target.closest('#popup, #nav, #amp')) return;
+  if (e.target.closest('#popup, #nav, #amp, footer')) return; // footer: let its link navigate with the hash intact
   if (isOpen()) closeHash();
   else closeNav();
 });
@@ -162,6 +165,12 @@ function trapFocus(e) {
   if (!items.length) return;
   const first = items[0];
   const last = items[items.length - 1];
+  // programmatic focus (e.g. #popup-body, tabindex -1) isn't in `items`: pull Tab back in
+  if (!items.includes(document.activeElement)) {
+    e.preventDefault();
+    (e.shiftKey ? last : first).focus();
+    return;
+  }
   if (e.shiftKey && document.activeElement === first) {
     e.preventDefault();
     last.focus();

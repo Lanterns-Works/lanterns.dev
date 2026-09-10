@@ -1,22 +1,8 @@
 /* lanterns.dev — the lantern menu + popups.
-   Extends the scene's system: Nimbus Mono throughout, the two-color chrome, a
-   single lantern-amber accent. Popups are paper (light) / ink (dark), translucent
-   so the scene stays alive behind them; the scene chrome never changes. */
-
-/* Richer type within the one family — files already ship in assets/fonts. */
-@font-face {
-  font-family: 'Nimbus Mono';
-  src: url('/assets/fonts/NimbusMono-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nimbus Mono';
-  src: url('/assets/fonts/NimbusMono-Oblique.woff2') format('woff2');
-  font-weight: 400;
-  font-style: oblique;
-  font-display: swap;
-}
+   Extends the scene's system: Georgia throughout (inherited from style.css), the
+   two-color chrome, a single lantern-amber accent. Popups are paper (light) / ink
+   (dark), translucent so the scene stays alive behind them; the scene chrome
+   never changes. */
 
 /* ---------- the lantern toggle + nav strip (bottom-left desktop) ---------- */
 
@@ -119,7 +105,7 @@ body.popup-open header { opacity: 0; pointer-events: none; }
   top: 0;
   left: 0;
   bottom: 0;
-  width: min(680px, 52vw);
+  width: min(740px, 54vw);
 }
 /* dark palette — applyTheme() resolves AUTO to a concrete data-theme, so this is
    the single source (base .popup above is the light palette). */
@@ -208,7 +194,7 @@ body.popup-open .popup-panel { opacity: 0.8; transform: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 3.4em;
+  min-width: 3.8em;
   line-height: 1;
 }
 .theme-toggle svg { width: 15px; height: 15px; display: block; }
@@ -253,23 +239,14 @@ body.popup-open .popup-panel { opacity: 0.8; transform: none; }
 }
 .side-link:hover,
 .side-link:focus-visible { color: var(--fg); }
-.side-link.is-active { color: var(--accent); }
-
-.side-post { display: flex; flex-direction: column; gap: 3px; }
-.side-post-date {
-  font-style: oblique;
-  text-transform: none;
-  letter-spacing: 0.04em;
-  opacity: 0.7;
-}
 
 .popup-body {
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  max-width: 64ch;
-  font-size: clamp(14px, 1.7vmin, 16px);
-  line-height: 1.75;
+  max-width: 38em; /* ~75 characters of Georgia */
+  font-size: clamp(15px, 1.8vmin, 17px);
+  line-height: 1.7;
   outline: none;
   padding-bottom: clamp(120px, 34vh, 340px); /* scroll well past the content */
   transition: color 0.5s ease;
@@ -286,30 +263,6 @@ body.popup-open .popup-panel { opacity: 0.8; transform: none; }
   transition: color 0.5s ease;
 }
 .popup-body h2:first-child { margin-top: 0; }
-
-.works-list { list-style: none; }
-.works-list li { margin-bottom: 0.9em; }
-.work-title { font-weight: 700; }
-
-.back {
-  display: inline-block;
-  color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-decoration: none;
-  margin-bottom: 1.6em;
-  transition: color 0.2s ease;
-}
-.back:hover,
-.back:focus-visible { color: var(--fg); }
-
-.post-date { font-style: oblique; color: var(--muted); margin-bottom: 0.3em; }
-.post-title {
-  font-size: clamp(19px, 2.6vmin, 23px);
-  font-weight: 400;
-  margin-bottom: 1em;
-}
 
 /* copyright — inside the popup on mobile (removed from the footer there) */
 .popup-copyright {
@@ -346,7 +299,7 @@ body:not(.popup-open) .popup-lantern { opacity: 0; transition-duration: 0.34s; }
 
 /* ---------- contact form ---------- */
 
-.contact-form { margin-top: 0.4em; max-width: 42ch; }
+.contact-form { margin-top: 0.4em; max-width: 26em; }
 .field { margin-bottom: 1.3em; }
 .field label {
   display: block;
