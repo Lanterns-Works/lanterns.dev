@@ -11,14 +11,18 @@ is the July design as built — the September deltas are listed first.*
 `september-pages` (PR pending em's eye). Five nav items — About · **Essays** (external,
 `https://essays.lanterns.dev/`) · Research · Resources · Contact — with em's September
 copy in `content/en.js`, Georgia replacing Nimbus Mono site-wide (font files deleted), the
-desktop popup widened a little for reading, and a static footer link + RSS `alternate`
-pointing at the essays site so crawlers see it without JS. Home stays empty (the three
+desktop popup widened a little for reading, and a static footer link to the essays
+site so crawlers see it without JS. Home stays empty (the three
 "Every being is a point of light" paragraphs open About). Works / Join / News and the
 placeholder posts are gone, not migrated. The contact form (EmailJS) stays and carries
 the "Speaking and collaboration" copy.
 
 **Do next:**
-1. em's eye on `september-pages` — desktop + portrait mobile; then merge.
+1. em's eye on `september-pages` (PR #2) — desktop + portrait mobile. **Merge only once
+   `essays.lanterns.dev` resolves to Ghost** (today it's a registrar forward back to the
+   homepage, so the Essays item and footer link would bounce). When Ghost serves it, add
+   `<link rel="alternate" type="application/rss+xml" href="https://essays.lanterns.dev/rss/">`
+   to `index.html` — held back so feed readers don't cache a 301.
 2. **Attribution:** About is written without a name. em wants the site attributed to
    **em lorien** with a short pseudonymous bio — needs em's words, then a paragraph in
    `content/en.js` `about`.
