@@ -17,7 +17,8 @@ Static files, no build step, native ES modules, GitHub Pages. Essays live on
   invent. Writing is attributed to **em lorien**.
 - **Identity:** commit as `em lorien <em@lanterns.dev>` (git conditional include for
   this folder). Switch `gh` to `em-lorien` before PR work. `main` is protected — branch,
-  PR, admin merge. No `Co-Authored-By` trailers.
+  PR, admin merge. No `Co-Authored-By` trailers. **PR review is the Claude GitHub app**
+  (Macroscope is Driver Digital only, not this org) — handle its findings before merging.
 - **The gate is em's eye** — desktop *and* portrait mobile. Test widths with a
   same-origin iframe, not `resize_window`.
 - **Shader:** `docs/SPEC-shaders.md`, `docs/HANDOFF-shaders.md`, `docs/how-the-scene-works.md`.
