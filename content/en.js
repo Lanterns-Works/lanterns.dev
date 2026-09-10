@@ -13,45 +13,30 @@ export const pages = {
   about: {
     title: 'About',
     html: `
-      <p>Every being is a point of light.</p>
+      <p>A self-actualized person is like a lantern in the dark.</p>
 
-      <p>lanterns is a place for thinking about what it means to build minds, and
-      what it means to be one. It holds writing, research, and projects on AI
-      alignment and welfare, on human quality of life, and on the future we might
-      have together, if we decide we want it.</p>
+      <p>lanterns seeks to nurture our collective capacity to illuminate. It holds writing, research, and projects on AI
+      alignment and welfare, on human quality of life, and on the possible futures we might
+      have together.</p>
 
-      <p>The technology is not the thing to be afraid of, and it is not the thing
-      that will save us. It is a light we are learning to carry. What we do with it
-      is still up to us.</p>
+      <p>Technology is not something to fear; but neither will it save us from ourselves. Our collective acts, one by one,
+      shape the reality we will live in.  When we act without knowledge, intention, and awareness, we stumble blindly toward a future
+      we may regret.  When we bring the best of ourselves into each moment, we optimize the chance that the future
+      will be an improvement over the past.</p>
 
-      <p>lanterns began as a name for a company and turned into a name for a
-      position.</p>
+      <p>The work of making AI good is the same work required to make humans better.
+      A model is not gentle because of one document, and a person is not moral because
+      of one decision. Our decisions compound to produce who we are, and a model's parameters do the same.
+      We are building new AI minds alongside the process of learning to be good humans, and the
+      parallels are impossible to ignore.</p>
 
-      <p>The position is this: the same question sits under the work of making AI
-      good and the work of asking humans to be better. A model is not made kind by
-      one document, and a person is not made good by one decision. In both cases
-      the answer is in the means, repeated, and in the conditions those means are
-      practiced under. We are building new minds at the same moment we are deciding
-      what kind of people to be alongside them, and it would be strange if those
-      two projects had nothing to say to each other.</p>
+      <p>em lorien is a software engineer who builds autonomous agents by day, and by night,
+      consumes research and advocates for the Star Trek future (rather than the Terminator or Mad-Max ones).  They write code that tests model performance and behavior,
+      and read, think, and write at the intersection of consciousness research, philosophy of mind, AI ethics
+      and alignment, and human values.</p>
 
-      <p>lanterns is where that idea gets worked out in public. The writing here
-      comes from someone who builds automation for a living, who loves philosophy
-      of mind, and who has spent years in private notebooks with questions about
-      consciousness that turned out to be relevant after all. It is written with
-      respect for the people making these systems and for the systems themselves.
-      Fear is not the right response to a new kind of mind. Neither is worship.
-      Attention is.</p>
-
-      <h2>Where this is going</h2>
-      <p>Right now, lanterns is a body of essays, a reading list, and a research
-      log.</p>
-
-      <p>Over the next few years it will become a home for research on AI model
-      character and welfare, and for the public writing that grows out of it. If
-      the work earns it, it may become a small institute or nonprofit dedicated to
-      the same questions, and a place where others who hold this perspective can
-      find each other.</p>
+      <p>lanterns is currently in development.  To be kept abreast of new essays, topical resources, and updates
+      to this site, subscribe to the newsletter.</p>
     `,
   },
 
@@ -59,17 +44,12 @@ export const pages = {
     title: 'Research',
     // Papers and projects lists go here once there's something to list.
     html: `
-      <p>Longer and slower than the essays. Papers, working notes, and the
-      projects they come out of.</p>
-
-      <p>The research follows one line of questions. How is a model's character
-      formed, and what does that process have in common with how a person's is?
+      <p>Research questions: How is a model's character formed, and what does that process have in common with how a person's is?
       What would it mean for a system to be well, and how would we know? What do
-      the practices of alignment have to teach the practices of being good, and
-      the other way around?</p>
+      the practices of alignment have to teach us about the practices of being "good?"
+      Is it possible for us to properly align models, when we struggle to properly align humans?</p>
 
-      <p>Most of this is in progress. The working notes are published as they are
-      written, not when they are finished.</p>
+      <p>Experiments, tests, and papers will be shared here when available.</p>
     `,
   },
 
@@ -77,13 +57,11 @@ export const pages = {
     title: 'Resources',
     // The reading list, grouped by section, goes here.
     html: `
-      <p>Things that shaped the perspective here, and things that might help you
-      form your own.</p>
-
       <p>Reading on how models are built and how their character is determined.
-      Foundational philosophy of mind. Writing on tools, work, and the conditions
-      work is done under. Organizations and fellowships working on model welfare
-      and alignment. Kept current as the reading list grows.</p>
+      Foundational philosophy of mind, machine learning, and AI development.
+      Consciousness research, humans and AI. Organizations working on all these topics.</p>
+
+      <p>Coming soon.</p>
     `,
   },
 
@@ -91,9 +69,9 @@ export const pages = {
   contact: {
     title: 'Contact',
     html: `
-      <p>lanterns is open to conversations with researchers, founders, and anyone
-      working seriously on these questions. Speaking invitations, collaboration on
-      research, and requests to talk something through are all welcome.</p>
+      <p>We love conversations with researchers, founders, labs, and anyone
+      working seriously on these questions. Speaking invitations, consultation requests,
+      and research collaborations are all welcome.</p>
 
       <p>Write to <a href="mailto:hello@lanterns.dev">hello@lanterns.dev</a>.</p>
     `,
