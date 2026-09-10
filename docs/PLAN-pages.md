@@ -18,11 +18,8 @@ placeholder posts are gone, not migrated. The contact form (EmailJS) stays and c
 the "Speaking and collaboration" copy.
 
 **Do next:**
-1. em's eye on `september-pages` (PR #2) — desktop + portrait mobile. **Merge only once
-   `essays.lanterns.dev` resolves to Ghost** (today it's a registrar forward back to the
-   homepage, so the Essays item and footer link would bounce). When Ghost serves it, add
-   `<link rel="alternate" type="application/rss+xml" href="https://essays.lanterns.dev/rss/">`
-   to `index.html` — held back so feed readers don't cache a 301.
+1. em's eye on `september-pages` (PR #2) — desktop + portrait mobile; then merge. The essays
+   subdomain is live on Ghost (DNS done 2026-09-10) and `index.html` carries the RSS `alternate`.
 2. **Attribution:** About is written without a name. em wants the site attributed to
    **em lorien** with a short pseudonymous bio — needs em's words, then a paragraph in
    `content/en.js` `about`.
