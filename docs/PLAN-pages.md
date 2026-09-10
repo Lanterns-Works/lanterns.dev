@@ -12,7 +12,7 @@ Five nav items — About · **Essays** (external, new tab, `https://essays.lante
 Ghost now serves) · Research · Resources · Contact — with em's September copy in `content/en.js`,
 Georgia site-wide (Nimbus Mono and its files gone), a slightly wider desktop popup with a 30px
 scrollbar gutter, a static footer link and RSS `alternate` to the essays site. Home stays empty
-(the three "Every being is a point of light" paragraphs open About). Works / Join / News and the
+(About opens with "A self-actualized person is like a lantern in the dark"). Works / Join / News and the
 placeholder posts are gone. The contact form (EmailJS) stays and carries the "Speaking and
 collaboration" copy. PR review is the Claude GitHub app (`.github/workflows/`), proven on PR #2.
 
