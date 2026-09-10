@@ -31,7 +31,7 @@ the "Speaking and collaboration" copy.
 4. **Essays site** (Ghost, custom theme) — plan and open items in
    `../plans/lanterns/essays-site.md`. The Essays page copy from September (intro +
    subscribe + list) belongs to that site's index, not here.
-5. Desktop reading width is still an eye-gate item: `.popup` is `min(740px, 54vw)`,
+5. Desktop reading width is still an eye-gate item: `.popup` is `min(774px, 56vw)`,
    body measure `38em` at 15–17px Georgia (~75 characters). Tune by eye.
 
 **Run it:** no build step. `python3 -m http.server --directory <repo>` then open
