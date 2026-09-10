@@ -156,7 +156,7 @@ document.addEventListener('keydown', (e) => {
 // click outside the popup / nav / toggle closes
 document.addEventListener('click', (e) => {
   if (!isOpen() && !navOpen()) return;
-  if (e.target.closest('#popup, #nav, #amp, footer')) return; // footer: let its link navigate with the hash intact
+  if (e.target.closest('#popup, #nav, #amp, footer a')) return; // footer link: let it navigate with the hash intact
   if (isOpen()) closeHash();
   else closeNav();
 });
