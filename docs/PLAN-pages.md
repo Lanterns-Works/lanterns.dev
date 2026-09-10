@@ -1,32 +1,35 @@
 # Plan: site pages + navigation
 
-*Design approved by em 2026-07-13. Inspo: **earendil.com**. Content is placeholder-only
-until em provides real copy. This is the build plan; the shader work is separate
-(`SPEC-shaders.md`). **Built and shipped 2026-07-14 (PR #1 merged); next up is real content.***
+*Design approved by em 2026-07-13, built and shipped 2026-07-14 (PR #1). **Revised
+2026-09-10** for the September direction: lanterns is a think tank on AI alignment /
+welfare and human quality of life; essays moved to a Ghost site. The architecture below
+is the July design as built — the September deltas are listed first.*
 
 ## Next session — start here
 
-**Where we are (updated 2026-07-14):** the pages + navigation build is **shipped — PR #1
-merged to `main`, mobile confirmed by em.** Live: lantern-icon menu, hash routing, popups,
-tri-state light/dark, News, section anchors, the live EmailJS contact form (send verified;
-domain allowlist locked), the roaming amber lamp, the mobile full-cover menu, and the
-revised water mask. The pages currently run on **placeholder copy.** (Architecture below
-describes the original design; a few details evolved in build — the toggle is a lantern
-icon, not `&`; the desktop nav strip hides once a popup opens; see the shipped code.)
+**Where we are (2026-09-10):** the September page set is built on branch
+`september-pages` (PR pending em's eye). Five nav items — About · **Essays** (external,
+`https://essays.lanterns.dev/`) · Research · Resources · Contact — with em's September
+copy in `content/en.js`, Georgia replacing Nimbus Mono site-wide (font files deleted), the
+desktop popup widened a little for reading, and a static footer link to the essays
+site so crawlers see it without JS. Home stays empty (the three
+"Every being is a point of light" paragraphs open About). Works / Join / News and the
+placeholder posts are gone, not migrated. The contact form (EmailJS) stays and carries
+the "Speaking and collaboration" copy.
 
-**Do next — replace the placeholder content, ONE PAGE AT A TIME (structured intake).**
-em wants a guided flow, not a bulk drop:
-1. Ask em what the **About** page should say; em pastes a raw chunk.
-2. Format that chunk into `content/en.js` — paragraphs + **logical `<h2>` section headings**
-   (2+ headings auto-become the in-popup anchor sidebar — see `render.js` `buildAnchors`).
-   Keep em's voice; add structure, don't invent copy.
-3. Eye-gate, then move to the **next** page. Repeat for Works, Join, and the News posts.
-   Contact only needs its intro line (the form is already built). **Ask one page at a time
-   — don't run ahead.**
-
-**Content model (how to format):** pages = `{ title, html }` keyed by route in
-`content/en.js`; posts = `{ slug, title, date, html }`, newest-first. Bodies are first-party
-HTML strings (`innerHTML` — safe because first-party only).
+**Do next:**
+1. em's eye on `september-pages` (PR #2) — desktop + portrait mobile; then merge. The essays
+   subdomain is live on Ghost (DNS done 2026-09-10) and `index.html` carries the RSS `alternate`.
+2. **Attribution:** About is written without a name. em wants the site attributed to
+   **em lorien** with a short pseudonymous bio — needs em's words, then a paragraph in
+   `content/en.js` `about`.
+3. **Research** needs its papers + projects lists; **Resources** its reading list, grouped
+   by section (2+ `<h2>`s auto-build the anchor sidebar). Both wait on em's content.
+4. **Essays site** (Ghost, custom theme) — plan and open items in
+   `../plans/lanterns/essays-site.md`. The Essays page copy from September (intro +
+   subscribe + list) belongs to that site's index, not here.
+5. Desktop reading width is still an eye-gate item: `.popup` is `min(774px, 56vw)`,
+   body measure `38em` at 15–17px Georgia (~75 characters). Tune by eye.
 
 **Run it:** no build step. `python3 -m http.server --directory <repo>` then open
 `localhost:8000`; edit and hard-reload (Cmd+Shift+R busts the script cache).
@@ -40,7 +43,22 @@ HTML strings (`innerHTML` — safe because first-party only).
   form. Don't add others speculatively.
 - **The gate is em's eye** — judge on desktop *and* the portrait-mobile crop, not a
   checklist. Scene chrome (`#160e0e`/`#e7e5de`) is fixed; light/dark affects only popups.
-- Cross-refs: shader → `SPEC-shaders.md` / `HANDOFF-shaders.md`; pages → this doc.
+- **Style:** `lanterns` lowercase in prose; Georgia everywhere; keep em's words.
+- Cross-refs: shader → `SPEC-shaders.md` / `HANDOFF-shaders.md`; pages → this doc;
+  mission + essays site → the plans repo.
+
+## September 2026 deltas (vs. the July design below)
+
+- **Nav:** `NAV` entries in `render.js` take an optional third element, an external href;
+  `menu.js` builds those as plain new-tab links (`target=_blank`, `rel=noopener`) with no `data-route`, so routing,
+  active state, and the route allowlist ignore them.
+- **Routes:** `parseHash` returns `{ name }` only — no slug routes remain. News, posts,
+  `renderNews`, and the Works/Join pages are deleted.
+- **Type:** Georgia system stack in `style.css`; no `@font-face`, no font files. Measures
+  moved from `ch` to `em`.
+- **Ghost, not a CMS:** the "blog ~30 posts, dead simple" decision is superseded — essays
+  are on Ghost at essays.lanterns.dev with its own theme. Nothing is fetched from it.
+- **Contact:** built (EmailJS), kept; §6 below describes the pre-build state.
 
 ## Decisions (locked)
 

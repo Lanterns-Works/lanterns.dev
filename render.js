@@ -2,33 +2,32 @@
 // Pure view layer: menu.js owns interaction + routing and hands us the mount
 // points; we only write into them. No hash reads/writes here.
 
-import { pages, posts } from './content/en.js';
+import { pages } from './content/en.js';
 
 // The nav, in order. Exported so menu.js builds the strip from the same list.
+// A third element makes the item an external link — no popup, no route; its
+// name is then a label-only slot.
 export const NAV = [
   ['about', 'About'],
-  ['works', 'Works'],
-  ['news', 'News'],
-  ['join', 'Join'],
+  ['essays', 'Essays', 'https://essays.lanterns.dev/'],
+  ['research', 'Research'],
+  ['resources', 'Resources'],
   ['contact', 'Contact'],
 ];
 
 const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// '#news/on-doing-less' -> { name: 'news', slug: 'on-doing-less' }; '' -> null.
+// '#about' -> { name: 'about' }; '' -> null. Only the first segment is a route,
+// so an inbound '#about/' (the essays site's nav may append a slash) still
+// resolves. Keep the split.
 export function parseHash(hash) {
   const clean = (hash || '').replace(/^#/, '');
   if (!clean) return null;
-  const [name, slug] = clean.split('/');
-  return { name, slug: slug || null };
+  const [name] = clean.split('/');
+  return { name };
 }
 
 const slugify = (s) => s.toLowerCase().replace(/[^\w]+/g, '-').replace(/^-|-$/g, '');
-const fmtDate = (iso) => {
-  const [y, m, d] = iso.split('-').map(Number);
-  return `${MONTHS[m - 1]} ${d}, ${y}`;
-};
 
 // mount = { title, side, body } — the three elements we fill.
 export function render(route, mount) {
@@ -37,7 +36,6 @@ export function render(route, mount) {
   body.innerHTML = '';
   side.hidden = true;
 
-  if (route.name === 'news') return renderNews(route.slug, mount);
   if (route.name === 'contact') return renderContact(mount);
 
   const page = pages[route.name];
@@ -70,35 +68,6 @@ function buildAnchors(body, side) {
     });
     side.appendChild(a);
   });
-}
-
-// News: sidebar is the post list (real #news/<slug> links, so the hash router
-// handles switching + back button + deep links for free). Body shows the
-// selected post; #news with no slug shows the newest.
-function renderNews(slug, mount) {
-  const { title, side, body } = mount;
-  const post = posts.find((p) => p.slug === slug) || posts[0];
-  title.textContent = 'News';
-
-  side.hidden = false;
-  posts.forEach((p) => {
-    const a = document.createElement('a');
-    a.className = 'side-link side-post' + (p.slug === post.slug ? ' is-active' : '');
-    a.href = `#news/${p.slug}`;
-    a.setAttribute('aria-current', p.slug === post.slug ? 'true' : 'false');
-    a.innerHTML =
-      `<span class="side-post-title">${p.title}</span>` +
-      `<span class="side-post-date">${fmtDate(p.date)}</span>`;
-    side.appendChild(a);
-  });
-
-  body.innerHTML =
-    `<a class="back" href="#news">← all entries</a>` +
-    `<article class="post">` +
-    `<p class="post-date">${fmtDate(post.date)}</p>` +
-    `<h3 class="post-title">${post.title}</h3>` +
-    post.html +
-    `</article>`;
 }
 
 // Contact: intro copy + the live form. menu.js wires the behavior (contact.js)

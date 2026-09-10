@@ -9,19 +9,13 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-@font-face {
-  font-family: 'Nimbus Mono';
-  src: url('/assets/fonts/NimbusMono-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-display: swap;
-}
-
 html, body { height: 100%; overflow: hidden; }
 
 body {
   background: var(--black);
   color: var(--white);
-  font-family: 'Nimbus Mono', ui-monospace, 'Courier New', monospace;
+  font-family: Georgia, 'Noto Serif', 'Times New Roman', Times, serif; /* Georgia where installed (Noto on Android/Linux); one face across site, essays, newsletter */
+  letter-spacing: 0.02em; /* a touch of air in Georgia; labels set their own tracking */
 }
 
 .scene {
@@ -121,6 +115,14 @@ footer {
   letter-spacing: 0.08em;
   opacity: 0.7;
 }
+footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(231, 229, 222, 0.45);
+  text-underline-offset: 3px;
+}
+footer a:hover { text-decoration-color: currentColor; }
+footer a:focus-visible { outline: 1px solid currentColor; outline-offset: 3px; }
 
 /* --- the lantern glow: subtle breathing steady-state, JS-scheduled gusts --- */
 
