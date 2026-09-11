@@ -1,6 +1,6 @@
 # lanterns.dev
 
-The lanterns front door: one WebGL scene, hash-routed popup pages over it, a contact form.
+The Lanterns front door: one WebGL scene, hash-routed popup pages over it, a contact form.
 Static files, no build step, native ES modules, GitHub Pages. Essays live on
 **essays.lanterns.dev** (Ghost) — this site only links there.
 
@@ -9,7 +9,8 @@ Static files, no build step, native ES modules, GitHub Pages. Essays live on
   spec, `essays-site.md` the Ghost site).
 - **Run:** `python3 -m http.server --directory <repo>` → `localhost:8000`; hard-reload
   (Cmd+Shift+R) after edits.
-- **Style:** `lanterns` lowercase in prose; the wordmark image carries the period.
+- **Style:** **Lanterns** is a proper noun in prose — capitalize it. Lowercase only as the
+  wordmark: the logo image and its alt, the `lanterns.` page title, and the copyright lines.
   **Georgia** (system stack, nothing vendored) is the one face across this site, the
   essays site, and the newsletter. Two colours, `#160e0e` / `#e7e5de`; light/dark
   affects popups only, never the scene chrome.
