@@ -31,7 +31,7 @@ export const pages = {
       parallels and potential pitfalls are impossible to ignore.</p>
 
       <p>em lorien is a software engineer who builds autonomous agents by day, and by night,
-      consumes and produces research and advocates for a sustainable, open-hearted, human-oriented future - for us and the technologies we create.  They write code that tests model performance and behavior,
+      consumes and produces research and advocates for a sustainable, open-hearted, human-oriented future — for us and the technologies we create.  They write code that tests model performance and behavior,
       and read, think, and write at the intersection of consciousness research, philosophy of mind, AI ethics
       and alignment, and human values.</p>
 
