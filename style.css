@@ -123,6 +123,8 @@ footer a {
 }
 footer a:hover { text-decoration-color: currentColor; }
 footer a:focus-visible { outline: 1px solid currentColor; outline-offset: 3px; }
+/* GitHub mark — same glyph as the essays-site footer; icon-only, so no underline. */
+.footer-gh { text-decoration: none; vertical-align: -2px; margin-left: 6px; }
 
 /* --- the lantern glow: subtle breathing steady-state, JS-scheduled gusts --- */
 
