@@ -38,8 +38,7 @@ opens a PR.
 5. Desktop reading width is still an eye-gate item: `.popup` is `min(774px, 56vw)`,
    body measure `38em` at 15–17px Georgia (~75 characters). Tune by eye.
 
-**Run it:** no build step. `python3 -m http.server --directory <repo>` then open
-`localhost:8000`; edit and hard-reload (Cmd+Shift+R busts the script cache).
+**Run it:** `README.md`, Preview.
 
 **Carry-forward rules:**
 - Commit as `em lorien <em@lanterns.dev>` (automatic via the git conditional-include for

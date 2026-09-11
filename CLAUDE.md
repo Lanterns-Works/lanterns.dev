@@ -7,8 +7,7 @@ Static files, no build step, native ES modules, GitHub Pages. Essays live on
 - **Read first:** `docs/PLAN-pages.md` (state of play + handoff at the top). The wider
   plan lives in the plans repo (`../plans/lanterns/`: `soul.md` mission, `site.md` scene
   spec, `essays-site.md` the Ghost site).
-- **Run:** `python3 -m http.server --directory <repo>` → `localhost:8000`; hard-reload
-  (Cmd+Shift+R) after edits.
+- **Run:** `README.md`, Preview.
 - **Style:** **Lanterns** is a proper noun in prose — capitalize it. Lowercase only as the
   wordmark: the logo image and its alt, the `lanterns.` page title, and the copyright lines.
   **Georgia** (system stack, nothing vendored) is the one face across this site, the
