@@ -1,13 +1,24 @@
-# Keeps the SHA-pinned actions in .github/workflows current. Daily, one grouped PR.
+# Actions float on their major tag (@v7, @v1), so every run already has the latest minor and
+# patch, and majors are the only action bumps that get a PR (Maria, 2026-09-11; the Driver
+# Digital policy). The ignore block also closes the Dependabot edge that rewrites a major-tag
+# ref into a pinned patch, which would stop that copy floating.
 version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+    groups:
+      github-owned:
+        patterns:
+          - "actions/*"
+      claude-code-action:
+        patterns:
+          - "anthropics/*"
     assignees:
       - "em-lorien"
-    groups:
-      actions:
-        patterns:
-          - "*"
+    commit-message:
+      prefix: "ci"
