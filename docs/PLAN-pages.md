@@ -1,24 +1,32 @@
 # Plan: site pages + navigation
 
 *Design approved by em 2026-07-13, built and shipped 2026-07-14 (PR #1). **Revised
-2026-09-10** for the September direction: lanterns is a think tank on AI alignment /
+2026-09-10** for the September direction: Lanterns is a think tank on AI alignment /
 welfare and human quality of life; essays moved to a Ghost site. The architecture below
 is the July design as built — the September deltas are listed first.*
 
 ## Next session — start here
 
-**Where we are (2026-09-10):** the September page set is **live — PR #2 merged to `main`.**
+**Where we are (2026-09-12):** the September page set is **live — PR #2 merged to `main`.**
 Five nav items — About · **Essays** (external, new tab, `https://essays.lanterns.dev/`, which
 Ghost now serves) · Research · Resources · Contact — with em's September copy in `content/en.js`,
 Georgia site-wide (Nimbus Mono and its files gone), a slightly wider desktop popup with a 30px
 scrollbar gutter, a static footer link and RSS `alternate` to the essays site. Home stays empty
-(About opens with "A self-actualized person is like a lantern in the dark"). Works / Join / News and the
+(About opens with "A self-actualized person is a lantern in the dark"). Works / Join / News and the
 placeholder posts are gone. The contact form (EmailJS) stays and carries the "Speaking and
 collaboration" copy. PR review is the Claude GitHub app (`.github/workflows/`), proven on PR #2.
+Since then: actions float on their major tag (PR #7); em's revised About / Research / Contact
+copy, the brand rule (Lanterns capitalized in prose — `CLAUDE.md`), a GitHub link in the footer
+(the same glyph as the essays-site footer), and the workflow patch (PR #8). **The two
+workflows are this repo's own:** Driver's PR-review rail was retired for Macroscope in August, so
+there is no final template to import — patch them in place. They now keep the transcript in the
+job log only (it masks secrets; an artifact on a public repo does not), the review marker treats
+a skipped run as unreviewed, and the `@claude` rail asks for an adversarial pre-review before it
+opens a PR.
 
 **Do next:**
-1. Essays theme: `../Ghost-edition-Lanterns` (a fork of Ghost's Edition) needs housekeeping and a
-   push to the org — list in `../plans/lanterns/essays-site.md`, Repo section.
+1. Essays theme: `../ghost-edition-lanterns` is on the org (`Lanterns-Works/Ghost-Edition-Lanterns`);
+   its state of play is that repo's `docs/HANDOFF.md`.
 2. **Attribution:** About is written without a name. em wants the site attributed to
    **em lorien** with a short pseudonymous bio — needs em's words, then a paragraph in
    `content/en.js` `about`.
@@ -30,8 +38,7 @@ collaboration" copy. PR review is the Claude GitHub app (`.github/workflows/`), 
 5. Desktop reading width is still an eye-gate item: `.popup` is `min(774px, 56vw)`,
    body measure `38em` at 15–17px Georgia (~75 characters). Tune by eye.
 
-**Run it:** no build step. `python3 -m http.server --directory <repo>` then open
-`localhost:8000`; edit and hard-reload (Cmd+Shift+R busts the script cache).
+**Run it:** `README.md`, Preview.
 
 **Carry-forward rules:**
 - Commit as `em lorien <em@lanterns.dev>` (automatic via the git conditional-include for
@@ -42,7 +49,7 @@ collaboration" copy. PR review is the Claude GitHub app (`.github/workflows/`), 
   form. Don't add others speculatively.
 - **The gate is em's eye** — judge on desktop *and* the portrait-mobile crop, not a
   checklist. Scene chrome (`#160e0e`/`#e7e5de`) is fixed; light/dark affects only popups.
-- **Style:** `lanterns` lowercase in prose; Georgia everywhere; keep em's words.
+- **Style:** casing and type rules live in `CLAUDE.md`; keep em's words.
 - Cross-refs: shader → `SPEC-shaders.md` / `HANDOFF-shaders.md`; pages → this doc;
   mission + essays site → the plans repo.
 
