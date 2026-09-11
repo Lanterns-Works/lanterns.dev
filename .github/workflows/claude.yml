@@ -50,7 +50,7 @@ jobs:
       id-token: write
       actions: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7
         with:
           # Full history: the action fetches the PR branch, and any review or rebase work needs it.
           fetch-depth: 0
@@ -59,7 +59,8 @@ jobs:
           # anonymously on a public repo, but the action unsets the header itself afterwards, so
           # leaving the default costs nothing and removes the failure mode entirely.
 
-      # Pinned action, floating CLI: the action SHA is supply-chain safety, the CLI tracks stable.
+      # The action floats on its major tag like every action here (majors are the only bumps that
+      # get a PR); the CLI tracks stable.
       # Retried and bounded — a stalled download would otherwise hang the attempt forever.
       - name: Install Claude Code (latest stable, resilient)
         run: |
@@ -75,7 +76,7 @@ jobs:
           "$HOME/.local/bin/claude" --version
 
       - id: claude
-        uses: anthropics/claude-code-action@19dda84776b3518d98b8798e591daee763049ed3 # v1.0.220
+        uses: anthropics/claude-code-action@v1
         env:
           # anthropics/claude-code-action#1499 (open through v1.0.220): the action stops reading the
           # SDK stream at the first result message, so a run that backgrounds subagents and ends its
@@ -122,7 +123,7 @@ jobs:
       # and a re-run shares the run id.
       - name: Keep the execution transcript
         if: ${{ always() && steps.claude.outputs.execution_file != '' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@v7
         with:
           name: claude-execution-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.claude.outputs.execution_file }}

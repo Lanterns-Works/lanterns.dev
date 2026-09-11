@@ -38,7 +38,7 @@ jobs:
       # Mints the Claude GitHub App installation token, so comments land as claude[bot].
       id-token: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           # fetch-depth: 0, NOT 1 — the review skill diffs base...HEAD, and a depth-1 checkout has
@@ -46,8 +46,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # Install the current stable CLI and hand it to the action, so the action stays pinned to a
-      # SHA while the runtime tracks stable. Retried and bounded: a stalled download otherwise hangs
+      # Install the current stable CLI and hand it to the action, so the runtime tracks stable the
+      # way the action tracks its major tag. Retried and bounded: a stalled download otherwise hangs
       # the attempt forever, and the action's own single-retry install has thrown "native binary not
       # found" in the fleet.
       - name: Install Claude Code (latest stable, resilient)
@@ -64,7 +64,7 @@ jobs:
           "$HOME/.local/bin/claude" --version
 
       - id: review
-        uses: anthropics/claude-code-action@19dda84776b3518d98b8798e591daee763049ed3 # v1.0.220
+        uses: anthropics/claude-code-action@v1
         env:
           # anthropics/claude-code-action#1499 (open through v1.0.220): the action stops reading the
           # SDK stream at the FIRST result message, so a run that backgrounds review subagents and
@@ -115,7 +115,7 @@ jobs:
       # load-bearing in the name: artifacts are immutable and a re-run shares the run id.
       - name: Keep the execution transcript
         if: ${{ always() && steps.review.outputs.execution_file != '' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@v7
         with:
           name: claude-review-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.review.outputs.execution_file }}
