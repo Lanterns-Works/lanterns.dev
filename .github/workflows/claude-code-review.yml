@@ -76,7 +76,8 @@ jobs:
           path_to_claude_code_executable: /home/runner/.local/bin/claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Full transcript in the job log; the default prints a 7-field summary and drops the
-          # result text, which is what made the silent runs undiagnosable.
+          # result text, which is what made the silent runs undiagnosable. The log, not an artifact,
+          # on purpose: the log masks registered secrets; an uploaded execution file would not.
           show_full_output: true
           # attribution: no Co-Authored-By trailer, no "Generated with Claude Code" footer (house rule).
           # env: the DOCUMENTED way to reach the Claude process — the action runs the SDK in an
@@ -111,17 +112,6 @@ jobs:
             - This is a static, no-build site: native ES modules, no bundler, no test suite. Review accordingly — correctness by reading, plus anything that would break GitHub Pages.
             - You MAY dispatch parallel subagents (the Task tool) to review independent parts of the diff at once. Stay read-only: report findings, never attempt a write — the token is read-only on code, so edits cannot land anyway.
 
-      # The action writes the full SDK transcript to a temp file and never uploads it. run_attempt is
-      # load-bearing in the name: artifacts are immutable and a re-run shares the run id.
-      - name: Keep the execution transcript
-        if: ${{ always() && steps.review.outputs.execution_file != '' }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: claude-review-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ steps.review.outputs.execution_file }}
-          retention-days: 30
-          if-no-files-found: ignore
-
       # OUTCOME-AWARE marker, and the reason this workflow can be trusted as the review of record: a
       # green run with zero visible output is indistinguishable from the workflow never having run.
       # !cancelled() so it also fires when the review ERRORED (when the truth that the PR is
@@ -133,11 +123,16 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
           OUTCOME: ${{ steps.review.outcome }}
+          # Empty when the action never ran Claude. Its workflow-validation guard (the review file
+          # must match main, so any PR that edits it is skipped) exits GREEN with no transcript —
+          # which is how Ghost-Edition-Lanterns PR #1 got a "ran to completion" marker for a review
+          # that never started.
+          EXEC_FILE: ${{ steps.review.outputs.execution_file }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -o pipefail
-          if [ "$OUTCOME" != "success" ]; then
-            printf '🤖 Claude review — ⚠️ **this review did not complete.** It errored or hit a limit before finishing, so this PR is effectively **unreviewed** — please do not read the absence of comments as a clean bill of health. Run log: %s\n' "$RUN_URL" > marker.md
+          if [ "$OUTCOME" != "success" ] || [ -z "$EXEC_FILE" ]; then
+            printf '🤖 Claude review — ⚠️ **this review did not complete.** It errored, hit a limit, or was skipped by the action (a PR that changes the review workflow itself is never reviewed), so this PR is effectively **unreviewed** — please do not read the absence of comments as a clean bill of health. Run log: %s\n' "$RUN_URL" > marker.md
           else
             printf '🤖 Claude review — the review ran to completion; any findings are inline above.\n' > marker.md
           fi
