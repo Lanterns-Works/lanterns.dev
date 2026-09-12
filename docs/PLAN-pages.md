@@ -55,6 +55,13 @@ opens a PR.
 
 ## September 2026 deltas (vs. the July design below)
 
+- **Nav strip (desktop) rests expanded** — on load and whenever no page is open (2026-09-12):
+  the lantern toggle alone did not read as navigation. The toggle or Esc collapses it; a click
+  on the scene no longer does. Mobile is unchanged (the toggle reads as a menu there).
+- **Essays link-out mark:** the external nav item carries `assets/link-out.png` after the word,
+  as a CSS mask in the text colour, so it follows the strip, the popup theme, and hover.
+- **One footer:** the popup's mobile footer is the page footer cloned by `menu.js` (copyright,
+  essays link, GitHub mark); 12px text, 14px mark (2026-09-12, up from 11/12 for legibility).
 - **Nav:** `NAV` entries in `render.js` take an optional third element, an external href;
   `menu.js` builds those as plain new-tab links (`target=_blank`, `rel=noopener`) with no `data-route`, so routing,
   active state, and the route allowlist ignore them.

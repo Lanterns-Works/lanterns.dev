@@ -1,8 +1,9 @@
 // lanterns.dev — the lantern menu: toggle, nav, popup open/close/switch, routing.
 // Module entry point; imports the renderer + content. The hash is the single
 // source of truth for which page-popup is open (deep links + back button). The
-// mobile "menu" (popup open on no page) is a transient UI state, like the
-// desktop nav strip being expanded.
+// mobile "menu" (popup open on no page) is a transient UI state. The desktop nav
+// strip rests expanded — on load and whenever no page is open — so the lantern
+// toggle is not the only hint that there is navigation; the toggle or Esc collapses it.
 
 import { render, parseHash, NAV } from './render.js';
 import { wireContactForm } from './contact.js';
@@ -16,7 +17,8 @@ const lantern = $('.popup-lantern');
 const mount = { title: $('#popup-title'), side: $('#popup-side'), body: $('#popup-body') };
 const routeNames = new Set(NAV.filter(([, , href]) => !href).map(([n]) => n));
 const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const isMobile = () => matchMedia('(max-width: 760px)').matches;
+const mobileMql = matchMedia('(max-width: 760px)');
+const isMobile = () => mobileMql.matches;
 const isOpen = () => document.body.classList.contains('popup-open');
 
 let lastFocus = null;
@@ -35,6 +37,11 @@ for (const [name, label, href] of NAV) {
       a.href = href;
       a.target = '_blank';
       a.rel = 'noopener';
+      const ico = document.createElement('span'); // link-out mark, drawn in currentColor (pages.css)
+      ico.className = 'link-out';
+      ico.setAttribute('role', 'img');
+      ico.setAttribute('aria-label', '(opens in a new tab)');
+      a.appendChild(ico);
     }
     else {
       a.href = `#${name}`;
@@ -59,6 +66,12 @@ function closeNav() {
   amp.setAttribute('aria-expanded', 'false');
 }
 const navOpen = () => document.body.classList.contains('nav-open');
+// the resting state with no page open: strip expanded on desktop, collapsed on mobile,
+// and nothing is "you are here"
+function restNav() {
+  if (isMobile()) closeNav(); else openNav();
+  setActiveNav(null);
+}
 
 // --- popup show / hide, with enter + exit transitions ---
 function showPopup() {
@@ -113,8 +126,8 @@ function applyHash() {
   const route = parseHash(location.hash);
   if (route && routeNames.has(route.name)) openPage(route);
   else {
+    restNav(); // before hidePopup(), so focus can return to a strip item
     hidePopup();
-    closeNav();
   }
 }
 // drop the fragment cleanly (no lingering '#…') and re-render
@@ -127,6 +140,8 @@ function closeHash() {
 
 window.addEventListener('hashchange', applyHash);
 window.addEventListener('popstate', applyHash);
+// crossing the breakpoint with no page open: the resting state differs by mode
+mobileMql.addEventListener('change', () => { if (!isOpen()) restNav(); });
 
 // toggle: close if anything's open, else open the menu (mobile) / nav strip (desktop)
 amp.addEventListener('click', () => {
@@ -153,12 +168,11 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// click outside the popup / nav / toggle closes
+// click outside the popup closes it
 document.addEventListener('click', (e) => {
-  if (!isOpen() && !navOpen()) return;
-  if (e.target.closest('#popup, #nav, #amp, footer a')) return; // footer link opens a new tab — keep this tab's hash/popup
-  if (isOpen()) closeHash();
-  else closeNav();
+  if (!isOpen()) return;
+  if (e.target.closest('#popup, #amp, footer a')) return; // footer link opens a new tab — keep this tab's hash/popup
+  closeHash();
 });
 
 // keep Tab inside the popup while it's an open modal (a11y basic for aria-modal)
@@ -254,6 +268,10 @@ themeBtn.addEventListener('click', (e) => {
 });
 // keep AUTO tracking the OS live — re-resolve data-theme (and the amp surface)
 darkMql.addEventListener('change', () => applyTheme(readTheme()));
+
+// the popup's footer (shown on mobile, where the fixed footer is hidden) is the page
+// footer, cloned — one source of markup for the copyright, the essays link and the mark
+$('.popup-copyright').innerHTML = $('footer').innerHTML;
 
 // --- go: reveal chrome, restore theme, honor any deep link on load ---
 amp.hidden = false;
