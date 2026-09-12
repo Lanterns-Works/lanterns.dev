@@ -5,7 +5,8 @@
 // anchor sidebar automatically at 2+ headings (render.js).
 //
 // Style rules (casing, type) live in CLAUDE.md.
-// Essays live on essays.lanterns.dev (Ghost) — the Essays nav item links out.
+// Essays are read on essays.lanterns.dev (Ghost); the Essays page here is the intro
+// plus a list of them, fetched by essays.js.
 //
 // i18n-ready: a future `content/fr.js` mirrors this exact shape.
 
@@ -36,6 +37,21 @@ export const pages = {
       and alignment, and human values.</p>
 
       <p>Lanterns is currently in development.  To be kept abreast of new essays, resources, and projects, <a href="https://essays.lanterns.dev/" target="_blank">subscribe to the newsletter.</a></p>
+    `,
+  },
+
+  // The list of essays is appended by render.js and filled by essays.js; this is
+  // just the intro.
+  essays: {
+    title: 'Essays',
+    html: `
+      <p>Written from inside the work, by someone who builds with these tools every day,
+      enjoys it more than is comfortable, and does not know where it ends up. Each essay
+      takes one claim a little further than the last.</p>
+
+      <p>The essays fall roughly into three threads: what AI does to the work and to the
+      people doing it; what we owe to the minds we are making; and what it would take for
+      humans to grow up enough to deserve the future the technology makes possible.</p>
     `,
   },
 
