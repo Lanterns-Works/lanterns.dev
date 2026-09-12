@@ -72,9 +72,10 @@ body.popup-open .nav { display: none; }
 .nav .nav-item:hover,
 .nav .nav-item:focus-visible { opacity: 1; }
 .nav .nav-item.is-active { opacity: 1; color: #e0a24e; }
-/* link-out mark on the external item: the PNG is an alpha mask, so it takes the text colour anywhere */
+/* link-out mark on the external item: the PNG is an alpha mask, so it takes the text colour anywhere.
+   Raised like a superscript caret, a touch larger than a true superscript. */
 .link-out {
-  display: inline-block; height: 0.7em; aspect-ratio: 200 / 112; margin-left: 0.35em;
+  display: inline-block; height: 0.5em; aspect-ratio: 200 / 112; margin-left: 0.3em; vertical-align: 0.25em;
   background: currentColor;
   -webkit-mask: url(/assets/link-out.png) center / contain no-repeat;
   mask: url(/assets/link-out.png) center / contain no-repeat;
