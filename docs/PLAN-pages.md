@@ -24,7 +24,7 @@ job log only (it masks secrets; an artifact on a public repo does not), the revi
 a skipped run as unreviewed, and the `@claude` rail asks for an adversarial pre-review before it
 opens a PR.
 Then PR #9 (merged 2026-09-12): the desktop nav strip rests expanded, the Essays item carries a
-link-out caret (0.5em, raised — tuned by Maria's eye, direct to `main` after the merge), and the
+link-out caret, and the
 popup's mobile footer is the page footer cloned. The footer keeps its essays link by decision:
 the essays subdomain gets that bit of special treatment.
 
