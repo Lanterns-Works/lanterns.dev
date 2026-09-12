@@ -13,9 +13,10 @@ const API = 'https://lanterns.ghost.io/ghost/api/content/posts/';
 const KEY = 'eca152e005d3f3d3b7e0517cb9';
 const FIELDS = 'title,url,published_at,excerpt'; // `excerpt` is the custom excerpt when set
 const ESSAYS_HOME = 'https://essays.lanterns.dev/';
-const WORDS = 40; // the essays site's feed shows 40 words; match it
+const WORDS = 40; // the essays site's feed cuts at 40 too (Ghost counts escaped text, so its
+                  // cut can run a few words short of this one — close enough, not mirrored)
 
-let pending = null; // one fetch per visit; a failure resets it so the next open retries
+let pending = null; // one fetch per visit; a failure or an empty answer resets it so the next open retries
 
 function fetchPosts() {
   // no custom headers: a "simple" request, so no CORS preflight round-trip. The
@@ -40,6 +41,7 @@ export async function fillEssays(list) {
   } catch {
     pending = null;
   }
+  if (!posts || !posts.length) pending = null; // nothing usable: don't cache it, the next open retries
   if (!list.isConnected) return; // the page was closed or swapped while we waited
   list.removeAttribute('aria-busy');
   list.replaceChildren(...(posts && posts.length ? posts.map(entry) : [fallback()]));

@@ -73,8 +73,9 @@ two sites: "One site or two" below.
   the lantern toggle alone did not read as navigation. The toggle or Esc collapses it; a click
   on the scene no longer does. Mobile is unchanged (the toggle reads as a menu there).
 - **Essays link-out mark:** links to the essays site carry `assets/link-out.png` after the word,
-  as a CSS mask in the text colour, so it follows the popup theme and hover. On the nav item
-  from PR #9; on each essay title in the list (and the fallback link) since 2026-09-12.
+  as a CSS mask in the text colour, so it follows the popup theme and hover. On the nav item from
+  PR #9 until 2026-09-12, when that item stopped linking out; on each essay title in the list
+  (and the fallback link) since.
 - **One footer:** the popup's mobile footer is the page footer cloned by `menu.js` (copyright,
   essays link, GitHub mark); 12px text, 14px mark (2026-09-12, up from 11/12 for legibility).
 - **Nav:** five drawer pages, all routed. (`NAV`'s optional third element — an external href

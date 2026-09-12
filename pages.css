@@ -392,7 +392,6 @@ body:not(.popup-open) .popup-lantern { opacity: 0; transition-duration: 0.34s; }
   color: var(--muted);
   margin-bottom: 0.6em;
 }
-.feed-excerpt { margin-bottom: 0; }
 
 /* ---------- mobile: popup covers the whole scene; menu lives inside it ---------- */
 @media (max-width: 760px) {
