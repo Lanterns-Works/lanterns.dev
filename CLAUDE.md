@@ -1,8 +1,9 @@
 # lanterns.dev
 
 The Lanterns front door: one WebGL scene, hash-routed popup pages over it, a contact form.
-Static files, no build step, native ES modules, GitHub Pages. Essays live on
-**essays.lanterns.dev** (Ghost) — this site only links there.
+Static files, no build step, native ES modules, GitHub Pages. Essays are read on
+**essays.lanterns.dev** (Ghost); this site lists them (metadata over the Content API,
+`essays.js`) and links there to read.
 
 - **Read first:** `docs/PLAN-pages.md` (state of play + handoff at the top). The wider
   plan lives in the plans repo (`../plans/lanterns/`: `soul.md` mission, `site.md` scene

@@ -72,8 +72,8 @@ body.popup-open .nav { display: none; }
 .nav .nav-item:hover,
 .nav .nav-item:focus-visible { opacity: 1; }
 .nav .nav-item.is-active { opacity: 1; color: #e0a24e; }
-/* link-out mark on the external item: the PNG is an alpha mask, so it takes the text colour anywhere.
-   Raised like a superscript caret, a touch larger than a true superscript. */
+/* link-out mark on links to the essays site: the PNG is an alpha mask, so it takes the text colour
+   anywhere. Raised like a superscript caret, a touch larger than a true superscript. */
 .link-out {
   display: inline-block; height: 0.5em; aspect-ratio: 200 / 112; margin-left: 0.3em; vertical-align: 0.25em;
   background: currentColor;
@@ -375,6 +375,24 @@ body:not(.popup-open) .popup-lantern { opacity: 0; transition-duration: 0.34s; }
 
 .form-status { font-size: 12px; color: var(--muted); }
 .form-status.is-error { color: #cc5c3d; }
+
+/* ---------- the essays list (essays.js fills it from the essays site) ---------- */
+/* the same fields as the essays site's feed: title, date, forty words */
+.essay-list { margin-top: 2.4em; }
+.feed { margin-bottom: 2em; }
+.feed-title { font-size: inherit; font-weight: 400; margin: 0 0 0.25em; }
+.feed-title a { color: var(--fg); text-decoration: none; }
+.feed-title a:hover,
+.feed-title a:focus-visible { color: var(--accent); }
+.feed-date {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6em;
+}
+.feed-excerpt { margin-bottom: 0; }
 
 /* ---------- mobile: popup covers the whole scene; menu lives inside it ---------- */
 @media (max-width: 760px) {
