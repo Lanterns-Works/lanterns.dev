@@ -17,7 +17,8 @@ const lantern = $('.popup-lantern');
 const mount = { title: $('#popup-title'), side: $('#popup-side'), body: $('#popup-body') };
 const routeNames = new Set(NAV.filter(([, , href]) => !href).map(([n]) => n));
 const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const isMobile = () => matchMedia('(max-width: 760px)').matches;
+const mobileMql = matchMedia('(max-width: 760px)');
+const isMobile = () => mobileMql.matches;
 const isOpen = () => document.body.classList.contains('popup-open');
 
 let lastFocus = null;
@@ -65,6 +66,12 @@ function closeNav() {
   amp.setAttribute('aria-expanded', 'false');
 }
 const navOpen = () => document.body.classList.contains('nav-open');
+// the resting state with no page open: strip expanded on desktop, collapsed on mobile,
+// and nothing is "you are here"
+function restNav() {
+  if (isMobile()) closeNav(); else openNav();
+  setActiveNav(null);
+}
 
 // --- popup show / hide, with enter + exit transitions ---
 function showPopup() {
@@ -119,8 +126,7 @@ function applyHash() {
   const route = parseHash(location.hash);
   if (route && routeNames.has(route.name)) openPage(route);
   else {
-    // desktop rests expanded — before hidePopup(), so focus can return to a strip item
-    if (isMobile()) closeNav(); else openNav();
+    restNav(); // before hidePopup(), so focus can return to a strip item
     hidePopup();
   }
 }
@@ -134,10 +140,8 @@ function closeHash() {
 
 window.addEventListener('hashchange', applyHash);
 window.addEventListener('popstate', applyHash);
-// crossing the breakpoint with no page open: the strip's resting state differs by mode
-matchMedia('(max-width: 760px)').addEventListener('change', (e) => {
-  if (!isOpen()) (e.matches ? closeNav : openNav)();
-});
+// crossing the breakpoint with no page open: the resting state differs by mode
+mobileMql.addEventListener('change', () => { if (!isOpen()) restNav(); });
 
 // toggle: close if anything's open, else open the menu (mobile) / nav strip (desktop)
 amp.addEventListener('click', () => {
