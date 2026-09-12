@@ -1,8 +1,9 @@
 // lanterns.dev — the lantern menu: toggle, nav, popup open/close/switch, routing.
 // Module entry point; imports the renderer + content. The hash is the single
 // source of truth for which page-popup is open (deep links + back button). The
-// mobile "menu" (popup open on no page) is a transient UI state, like the
-// desktop nav strip being expanded.
+// mobile "menu" (popup open on no page) is a transient UI state. The desktop nav
+// strip rests expanded — on load and whenever no page is open — so the lantern
+// toggle is not the only hint that there is navigation; the toggle or Esc collapses it.
 
 import { render, parseHash, NAV } from './render.js';
 import { wireContactForm } from './contact.js';
@@ -35,6 +36,11 @@ for (const [name, label, href] of NAV) {
       a.href = href;
       a.target = '_blank';
       a.rel = 'noopener';
+      const ico = document.createElement('span'); // link-out mark, drawn in currentColor (pages.css)
+      ico.className = 'link-out';
+      ico.setAttribute('role', 'img');
+      ico.setAttribute('aria-label', '(opens in a new tab)');
+      a.appendChild(ico);
     }
     else {
       a.href = `#${name}`;
@@ -113,8 +119,9 @@ function applyHash() {
   const route = parseHash(location.hash);
   if (route && routeNames.has(route.name)) openPage(route);
   else {
+    // desktop rests expanded — before hidePopup(), so focus can return to a strip item
+    if (isMobile()) closeNav(); else openNav();
     hidePopup();
-    closeNav();
   }
 }
 // drop the fragment cleanly (no lingering '#…') and re-render
@@ -127,6 +134,10 @@ function closeHash() {
 
 window.addEventListener('hashchange', applyHash);
 window.addEventListener('popstate', applyHash);
+// crossing the breakpoint with no page open: the strip's resting state differs by mode
+matchMedia('(max-width: 760px)').addEventListener('change', (e) => {
+  if (!isOpen()) (e.matches ? closeNav : openNav)();
+});
 
 // toggle: close if anything's open, else open the menu (mobile) / nav strip (desktop)
 amp.addEventListener('click', () => {
@@ -153,12 +164,11 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// click outside the popup / nav / toggle closes
+// click outside the popup closes it
 document.addEventListener('click', (e) => {
-  if (!isOpen() && !navOpen()) return;
-  if (e.target.closest('#popup, #nav, #amp, footer a')) return; // footer link opens a new tab — keep this tab's hash/popup
-  if (isOpen()) closeHash();
-  else closeNav();
+  if (!isOpen()) return;
+  if (e.target.closest('#popup, #amp, footer a')) return; // footer link opens a new tab — keep this tab's hash/popup
+  closeHash();
 });
 
 // keep Tab inside the popup while it's an open modal (a11y basic for aria-modal)
@@ -254,6 +264,10 @@ themeBtn.addEventListener('click', (e) => {
 });
 // keep AUTO tracking the OS live — re-resolve data-theme (and the amp surface)
 darkMql.addEventListener('change', () => applyTheme(readTheme()));
+
+// the popup's footer (shown on mobile, where the fixed footer is hidden) is the page
+// footer, cloned — one source of markup for the copyright, the essays link and the mark
+$('.popup-copyright').innerHTML = $('footer').innerHTML;
 
 // --- go: reveal chrome, restore theme, honor any deep link on load ---
 amp.hidden = false;

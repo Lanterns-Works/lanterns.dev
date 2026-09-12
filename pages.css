@@ -72,9 +72,16 @@ body.popup-open .nav { display: none; }
 .nav .nav-item:hover,
 .nav .nav-item:focus-visible { opacity: 1; }
 .nav .nav-item.is-active { opacity: 1; color: #e0a24e; }
+/* link-out mark on the external item: the PNG is an alpha mask, so it takes the text colour anywhere */
+.link-out {
+  display: inline-block; height: 0.7em; aspect-ratio: 200 / 112; margin-left: 0.35em;
+  background: currentColor;
+  -webkit-mask: url(/assets/link-out.png) center / contain no-repeat;
+  mask: url(/assets/link-out.png) center / contain no-repeat;
+}
 
 /* strip items fan out as it opens */
-body.nav-open .nav .nav-item { animation: nav-in 0.32s ease both; }
+body.nav-open .nav .nav-item { animation: nav-in 0.32s ease backwards; } /* not `both`: a forwards fill would pin opacity and kill hover */
 .nav .nav-item:nth-child(1) { animation-delay: 0.02s; }
 .nav .nav-item:nth-child(2) { animation-delay: 0.06s; }
 .nav .nav-item:nth-child(3) { animation-delay: 0.10s; }
@@ -265,14 +272,17 @@ body.popup-open .popup-panel { opacity: 0.8; transform: none; }
 }
 .popup-body h2:first-child { margin-top: 0; }
 
-/* copyright — inside the popup on mobile (removed from the footer there) */
+/* the page footer, cloned into the popup on mobile where the fixed footer is hidden (menu.js) */
 .popup-copyright {
   display: none;
   padding: clamp(24px, 6vmin, 48px) 0 clamp(24px, 6vmin, 40px);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   color: var(--muted);
 }
+.popup-copyright a { color: inherit; text-underline-offset: 3px; }
+.popup-copyright a:hover, .popup-copyright a:focus-visible { color: var(--fg); }
+.popup-copyright a:focus-visible { outline: 1px solid currentColor; outline-offset: 3px; }
 
 /* ---------- the roaming amber lamp (the popup's signature) ---------- */
 /* one amber point-glow fades in at a random spot while the popup is open,
@@ -375,7 +385,7 @@ body:not(.popup-open) .popup-lantern { opacity: 0; transition-duration: 0.34s; }
   }
   body.popup-open .menu-bar { display: none; } /* the popup carries its own close */
   .nav { display: none; }                       /* strip replaced by the in-popup nav */
-  footer { display: none; }                     /* copyright moves into the popup */
+  footer { display: none; }                     /* the footer moves into the popup */
 
   .popup { top: 0; left: 0; right: 0; bottom: 0; width: auto; }
   /* right: the body's own gutter takes 12px of the panel padding, so line length holds */
