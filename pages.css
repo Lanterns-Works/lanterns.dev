@@ -103,7 +103,7 @@ body.popup-open header { opacity: 0; pointer-events: none; }
   /* paper by default; dark scheme / explicit dark flip to ink below */
   --bg: #e7e5de;
   --fg: #160e0e;
-  --muted: rgba(22, 14, 14, 0.55);
+  --muted: rgba(22, 14, 14, 0.7);
   --accent: #b5701f;
   --edge: rgba(22, 14, 14, 0.14);
 
@@ -120,7 +120,7 @@ body.popup-open header { opacity: 0; pointer-events: none; }
 .popup[data-theme='dark'] {
   --bg: #171010;
   --fg: #e7e5de;
-  --muted: rgba(231, 229, 222, 0.55);
+  --muted: rgba(231, 229, 222, 0.7);
   --accent: #e0a24e;
   --edge: rgba(231, 229, 222, 0.14);
 }

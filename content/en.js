@@ -51,8 +51,6 @@ export const pages = {
 
       <p>The essays converge around the effects of AI on humans; the effects of humans on AI; and what it would take for
       humans to grow up enough to deserve the future the technology makes possible.</p>
-
-      <p>Coming soon.</p>
     `,
   },
 
