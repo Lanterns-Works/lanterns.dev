@@ -31,7 +31,8 @@ the essays subdomain gets that bit of special treatment.
 Then (2026-09-12): **Essays is a drawer page again.** em's intro, then the list of essays fetched
 from the essays site's Content API (`essays.js`: title, date, forty words, link) and rendered as
 text; reading happens on essays.lanterns.dev, in a new tab. Why, and what it settles about the
-two sites: "One site or two" below.
+two sites: "One site or two" below. In the same PR (2026-09-14): a LinkedIn mark in the footer
+before the GitHub one, matching the essays site.
 
 **Do next:**
 1. Essays theme: `../ghost-edition-lanterns` is on the org (`Lanterns-Works/Ghost-Edition-Lanterns`);
@@ -77,7 +78,8 @@ two sites: "One site or two" below.
   PR #9 until 2026-09-12, when that item stopped linking out; on each essay title in the list
   (and the fallback link) since.
 - **One footer:** the popup's mobile footer is the page footer cloned by `menu.js` (copyright,
-  essays link, GitHub mark); 12px text, 14px mark (2026-09-12, up from 11/12 for legibility).
+  essays link, LinkedIn and GitHub marks); 12px text, 14px marks (2026-09-12, up from 11/12 for
+  legibility; LinkedIn added 2026-09-14, before GitHub as on the essays site).
 - **Nav:** five drawer pages, all routed. (`NAV`'s optional third element — an external href
   for the Essays link-out — came with PR #2 and went 2026-09-12 with the link-out.)
 - **Routes:** `parseHash` returns `{ name }` only — no slug routes remain. News, posts,
