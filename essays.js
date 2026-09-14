@@ -93,7 +93,7 @@ function entry(post) {
 
 // the list could not be fetched (or is empty): point at the essays site instead
 function fallback() {
-  const p = el('p', 'feed-fallback');
+  const p = el('p');
   p.append('The essays live at ', outLink(ESSAYS_HOME, 'essays.lanterns.dev'), '.');
   return p;
 }
