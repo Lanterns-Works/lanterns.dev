@@ -45,8 +45,8 @@ export const pages = {
   essays: {
     title: 'Essays',
     html: `
-      <p>Writing to explore questions and anxieties from the intersection of consciousness research, philosophy of mind, AI ethics
-      and alignment, and human values.  Seeking to build a good future, rather than be right about
+      <p>Writing to explore questions and anxieties from the intersection of consciousness research, philosophy of mind, AI ethics,
+      AI alignment, and human values.  Seeking to build a good future, rather than be right about
       predicting a catastrophic one.</p>
 
       <p>The essays converge around the effects of AI on humans; the effects of humans on AI; and what it would take for
