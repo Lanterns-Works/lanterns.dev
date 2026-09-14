@@ -45,13 +45,14 @@ export const pages = {
   essays: {
     title: 'Essays',
     html: `
-      <p>Written from inside the work, by someone who builds with these tools every day,
-      enjoys it more than is comfortable, and does not know where it ends up. Each essay
-      takes one claim a little further than the last.</p>
+      <p>Writing to explore questions and anxieties from the intersection of consciousness research, philosophy of mind, AI ethics
+      and alignment, and human values.  Seeking to build a good future, rather than be right about
+      predicting a catastrophic one.</p>
 
-      <p>The essays fall roughly into three threads: what AI does to the work and to the
-      people doing it; what we owe to the minds we are making; and what it would take for
+      <p>The essays converge around the effects of AI on humans; the effects of humans on AI; and what it would take for
       humans to grow up enough to deserve the future the technology makes possible.</p>
+
+      <p>Coming soon.</p>
     `,
   },
 
