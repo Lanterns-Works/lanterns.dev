@@ -32,7 +32,9 @@ Then (2026-09-12): **Essays is a drawer page again.** em's intro, then the list 
 from the essays site's Content API (`essays.js`: title, date, forty words, link) and rendered as
 text; reading happens on essays.lanterns.dev, in a new tab. Why, and what it settles about the
 two sites: "One site or two" below. In the same PR (2026-09-14): a LinkedIn mark in the footer
-before the GitHub one, matching the essays site.
+before the GitHub one, matching the essays site. That was PR #10, merged 2026-09-14; PR #11 the
+same day: the Essays intro lost its "Coming soon." line, and the popup's muted token went from
+0.55 to 0.7 alpha so every small muted line clears AA contrast on both palettes.
 
 **Do next:**
 1. Essays theme: `../ghost-edition-lanterns` is on the org (`Lanterns-Works/Ghost-Edition-Lanterns`);
