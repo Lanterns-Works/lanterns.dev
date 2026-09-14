@@ -5,11 +5,9 @@
 import { pages } from './content/en.js';
 
 // The nav, in order. Exported so menu.js builds the strip from the same list.
-// A third element makes the item an external link — no popup, no route; its
-// name is then a label-only slot.
 export const NAV = [
   ['about', 'About'],
-  ['essays', 'Essays', 'https://essays.lanterns.dev/'],
+  ['essays', 'Essays'],
   ['research', 'Research'],
   ['resources', 'Resources'],
   ['contact', 'Contact'],
@@ -46,6 +44,9 @@ export function render(route, mount) {
   }
   title.textContent = page.title;
   body.innerHTML = page.html;
+  // Essays: the intro, then the list — essays.js fills it (menu.js calls it after
+  // this renders, the same shape as the contact form).
+  if (route.name === 'essays') body.insertAdjacentHTML('beforeend', '<div id="essay-list" class="essay-list"></div>');
   buildAnchors(body, side);
 }
 

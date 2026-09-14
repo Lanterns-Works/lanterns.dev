@@ -7,6 +7,7 @@
 
 import { render, parseHash, NAV } from './render.js';
 import { wireContactForm } from './contact.js';
+import { fillEssays } from './essays.js';
 
 const $ = (s) => document.querySelector(s);
 const amp = $('#amp');
@@ -15,7 +16,7 @@ const popupNav = $('#popup-nav');
 const popup = $('#popup');
 const lantern = $('.popup-lantern');
 const mount = { title: $('#popup-title'), side: $('#popup-side'), body: $('#popup-body') };
-const routeNames = new Set(NAV.filter(([, , href]) => !href).map(([n]) => n));
+const routeNames = new Set(NAV.map(([n]) => n));
 const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const mobileMql = matchMedia('(max-width: 760px)');
 const isMobile = () => mobileMql.matches;
@@ -27,26 +28,13 @@ let lanternTimer = null;
 let lanternDwell = null;
 
 // --- build the nav into BOTH the desktop strip and the in-popup (mobile) list ---
-for (const [name, label, href] of NAV) {
+for (const [name, label] of NAV) {
   for (const host of [nav, popupNav]) {
     const a = document.createElement('a');
     a.className = 'nav-item';
     a.textContent = label;
-    if (href) {
-      // external (essays): new tab, no route, never active
-      a.href = href;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      const ico = document.createElement('span'); // link-out mark, drawn in currentColor (pages.css)
-      ico.className = 'link-out';
-      ico.setAttribute('role', 'img');
-      ico.setAttribute('aria-label', '(opens in a new tab)');
-      a.appendChild(ico);
-    }
-    else {
-      a.href = `#${name}`;
-      a.dataset.route = name;
-    }
+    a.href = `#${name}`;
+    a.dataset.route = name;
     host.appendChild(a);
   }
 }
@@ -104,6 +92,7 @@ function openPage(route) {
   const first = showPopup();
   render(route, mount);
   if (route.name === 'contact') wireContactForm(document.getElementById('contact-form'));
+  if (route.name === 'essays') fillEssays(document.getElementById('essay-list'));
   mount.body.scrollTop = 0;
   setActiveNav(route.name);
   closeNav(); // the strip isn't part of the popup — collapse it once a page is open
