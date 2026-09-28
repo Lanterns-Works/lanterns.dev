@@ -19,9 +19,13 @@ Static files, no build step, native ES modules, GitHub Pages. Essays are read on
 - **Identity:** commit as `em lorien <em@lanterns.dev>` (git conditional include for
   this folder). Switch `gh` to `em-lorien` before PR work. `main` is protected — branch,
   PR, admin merge. No `Co-Authored-By` trailers. **PR review is the Claude GitHub app**
-  (Macroscope is Driver Digital only, not this org) — handle its findings before merging. After a
+  (no Macroscope in this org) — handle its findings before merging. After a
   workflow change lands on `main`, re-run a PR's review by **pushing** to it; close/reopen reuses
   the old workflow snapshot and skips.
+- **Pseudonymous in every file.** em lorien is the only name here: no real name, no company, no
+  home-directory paths, in docs, comments, commit messages, PR text or review replies. Attribute
+  decisions to em, as `(em, 2026-09-14)`. The repo is public. A git pre-commit guard in the
+  Lanterns folder refuses additions that slip; do not lean on it.
 - **The gate is em's eye** — desktop *and* portrait mobile. Test widths with a
   same-origin iframe, not `resize_window`.
 - **Shader:** `docs/SPEC-shaders.md`, `docs/HANDOFF-shaders.md`, `docs/how-the-scene-works.md`.
