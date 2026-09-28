@@ -19,7 +19,7 @@ collaboration" copy. PR review is the Claude GitHub app (`.github/workflows/`), 
 Since then: actions float on their major tag (PR #7); em's revised About / Research / Contact
 copy, the brand rule (Lanterns capitalized in prose — `CLAUDE.md`), a GitHub link in the footer
 (the same glyph as the essays-site footer), and the workflow patch (PR #8). **The two
-workflows are this repo's own:** Driver's PR-review rail was retired for Macroscope in August, so
+workflows are this repo's own:** the upstream PR-review template was retired in August, so
 there is no final template to import — patch them in place. They now keep the transcript in the
 job log only (it masks secrets; an artifact on a public repo does not), the review marker treats
 a skipped run as unreviewed, and the `@claude` rail asks for an adversarial pre-review before it
@@ -98,7 +98,7 @@ same day: the Essays intro lost its "Coming soon." line, and the popup's muted t
 
 ## One site or two (decided 2026-09-12)
 
-With the essays site live, Maria asked whether two sites were the right call. Researched
+With the essays site live, em asked whether two sites were the right call. Researched
 (Ghost docs, both repos): a Ghost(Pro) site takes one custom domain, an apex needs an ALIAS or
 CNAME-flattening DNS host, theme constraints are no obstacle, and the essays theme already has a
 full-viewport hero — so the scene *could* move into Ghost, at the cost of the drawer (~490 lines
