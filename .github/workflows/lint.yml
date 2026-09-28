@@ -3,14 +3,11 @@ name: Lint workflows
 # actionlint over .github/workflows/, plus shellcheck over every `run:` block. A broken workflow is
 # the one CI failure with NO signal: a YAML or shell error surfaces as a `startup_failure` — no
 # check run, no notification — indistinguishable on the PR page from checks that have not started.
-# Copied from a shared workflow template (2026-09-10).
 #
 # Job id `actionlint` is the check-run context if this is ever made a required check.
 
 on:
   pull_request:
-  # Multi-branch repos (Palmers-style, one release branch per country store) should add their own
-  # release branches here — this list is not inferred.
   push:
     branches: [main]
 
