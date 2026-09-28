@@ -29,3 +29,4 @@ Static files, no build step, native ES modules, GitHub Pages. Essays are read on
 - **The gate is em's eye** — desktop *and* portrait mobile. Test widths with a
   same-origin iframe, not `resize_window`.
 - **Shader:** `docs/SPEC-shaders.md`, `docs/HANDOFF-shaders.md`, `docs/how-the-scene-works.md`.
+- **Comments and commits:** Code should be self-describing whenever possible. Comments are written as one senior engineer to another, only to clarify complex or non-obvious code, in 2–3 lines at most. Never make junior-level comments (e.g. saying what a for loop does), and never put requirements, decisions, or history in a comment. Commit messages are succinct: what changed, plus any rationale a senior developer would need later. No history, narratives, or who-decided-what.
